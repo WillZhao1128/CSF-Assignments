@@ -9,21 +9,24 @@
 static Fixedpoint DUMMY;
 
 Fixedpoint fixedpoint_create(uint64_t whole) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  
+  Fixedpoint newFP;
+  newFP.whole = whole;
+
+  return newFP;
 }
 
 Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  
+  Fixedpoint newFP;
+  newFP.whole = whole;
+  newFP.frac = frac;
+  return newFP;
 }
 
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
-  // TODO: implement
-  assert(0);
-  return DUMMY;
+  
+  
 }
 
 uint64_t fixedpoint_whole_part(Fixedpoint val) {

@@ -4,7 +4,12 @@
 #include <stdint.h>
 
 typedef struct {
-  // TODO: add fields
+  uint64_t whole;
+  uint64_t frac;
+  uint8_t is_negative;
+  uint8_t invalid;
+  uint8_t is_underflow;
+  uint8_t is_overflow;
 } Fixedpoint;
 
 // Create a Fixedpoint value representing an integer.
