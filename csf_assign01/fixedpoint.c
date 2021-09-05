@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include "fixedpoint.h"
+#include <math.h>
 
 // You can remove this once all of the functions are fully implemented
 static Fixedpoint DUMMY;
@@ -27,8 +28,12 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
 
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   Fixedpoint newFP;
+  newFP.whole = 0;
+  newFP.frac = 0;
   int index = 0;
   int is_fraction = 0;
+  int count = 16;
+
   if(hex[index] == '-'){
     newFP.is_negative = 1;
     index++;
@@ -39,20 +44,22 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   }
 
   while(index < (int)strlen(hex)){
-     if(hex[index] == '.'){
+    if(hex[index] == '.'){
       is_fraction = 1;
       index++;
     }
     else if( isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71)){
       if(is_fraction){
         newFP.frac *= 16;
-        char temp[1];
-        temp[0] = hex[index]; 
+        char temp[2] = {'\0', '\0'};
+        temp[0] = hex[index];
+        
         newFP.frac += strtoul(temp, NULL, 16);
+        count--;
       }
       else{
         newFP.whole *= 16;
-        char temp[1];
+        char temp[2] = {'\0', '\0'};
         temp[0] = hex[index]; 
         newFP.whole += strtoul(temp, NULL, 16);
       }
@@ -64,6 +71,7 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     }
   }
 
+  newFP.frac *= pow(16, count);
   return newFP;
   
 }
@@ -161,8 +169,7 @@ int fixedpoint_is_underflow_pos(Fixedpoint val) {
 
 int fixedpoint_is_valid(Fixedpoint val) {
   // TODO: implement
-  assert(0);
-  return 0;
+  return !val.invalid;
 }
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
