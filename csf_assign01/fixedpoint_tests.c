@@ -33,6 +33,7 @@ void test_sub(TestObjs *objs);
 void test_is_overflow_pos(TestObjs *objs);
 void test_is_err(TestObjs *objs);
 // TODO: add more test functions
+void test_create_from_hex2(TestObjs *objs);
 
 int main(int argc, char **argv) {
   // if a testname was specified on the command line, only that
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
   //   TEST(my_awesome_tests);
   //
   // here. This ensures that your test function will actually be executed.
-  
+  TEST(test_create_from_hex2);
   TEST_FINI();
 }
 
@@ -256,3 +257,24 @@ void test_is_err(TestObjs *objs) {
 }
 
 // TODO: implement more test functions
+
+// MS 1 Test Funtions: 
+// fixedpoint_create
+// fixedpoint_create2
+// fixedpoint_whole_part
+// fixedpoint_frac_part
+// fixedpoint_is_zero
+
+void test_create_from_hex2(TestObjs *objs) {
+  (void) objs;
+  Fixedpoint val1 = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+
+  
+  printf("whole: %llu",fixedpoint_whole_part(val1));
+  printf("frac: %llu",fixedpoint_frac_part(val1));
+  ASSERT(fixedpoint_is_valid(val1));
+  ASSERT(3503398944222727 == fixedpoint_whole_part(val1));
+  ASSERT(8814070718616800336 == fixedpoint_frac_part(val1));
+
+  
+}
