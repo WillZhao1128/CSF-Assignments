@@ -1,3 +1,10 @@
+/*
+ * Fixedpoint Numeric Data Type and Arithmetic: Header
+ * CSF Assignment 1
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
 #ifndef FIXEDPREC_H
 #define FIXEDPREC_H
 

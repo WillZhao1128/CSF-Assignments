@@ -1,3 +1,10 @@
+/*
+ * Fixedpoint Numeric Data Type and Arithmetic: Implementation
+ * CSF Assignment 1
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,36 +18,36 @@ static Fixedpoint DUMMY;
 
 Fixedpoint fixedpoint_create(uint64_t whole) {
   
-  Fixedpoint newFP;
-  newFP.whole = whole;
-  newFP.frac = 0;
+  Fixedpoint new_fp;
+  new_fp.whole = whole;
+  new_fp.frac = 0;
 
-  return newFP;
+  return new_fp;
 }
 
 Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
   
-  Fixedpoint newFP;
-  newFP.whole = whole;
-  newFP.frac = frac;
-  return newFP;
+  Fixedpoint new_fp;
+  new_fp.whole = whole;
+  new_fp.frac = frac;
+  return new_fp;
 }
 
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
-  Fixedpoint newFP;
-  newFP.whole = 0;
-  newFP.frac = 0;
+  Fixedpoint new_fp;
+  new_fp.whole = 0;
+  new_fp.frac = 0;
   int index = 0;
   int is_fraction = 0;
   int count = 16;
 
   if(hex[index] == '-'){
-    newFP.is_negative = 1;
+    new_fp.is_negative = 1;
     index++;
   }
   else if(!(isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71))){
-    newFP.invalid = 1;
-    return newFP;
+    new_fp.invalid = 1;
+    return new_fp;
   }
 
   while(index < (int)strlen(hex)){
@@ -50,29 +57,29 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     }
     else if( isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71)){
       if(is_fraction){
-        newFP.frac *= 16;
+        new_fp.frac *= 16;
         char temp[2] = {'\0', '\0'};
         temp[0] = hex[index];
         
-        newFP.frac += strtoul(temp, NULL, 16);
+        new_fp.frac += strtoul(temp, NULL, 16);
         count--;
       }
       else{
-        newFP.whole *= 16;
+        new_fp.whole *= 16;
         char temp[2] = {'\0', '\0'};
         temp[0] = hex[index]; 
-        newFP.whole += strtoul(temp, NULL, 16);
+        new_fp.whole += strtoul(temp, NULL, 16);
       }
       index++;
     }
     else{
-      newFP.invalid = 1;
-      return newFP;
+      new_fp.invalid = 1;
+      return new_fp;
     }
   }
 
-  newFP.frac *= pow(16, count);
-  return newFP;
+  new_fp.frac *= pow(16, count);
+  return new_fp;
   
 }
 
@@ -84,7 +91,7 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
   return val.frac;
 }
 
-uint64_t frac_pos_overflow (uint64_t left, uint64_t right) {
+uint64_t frac_pos_overflow(uint64_t left, uint64_t right) {
   // Check
   uint64_t n = sizeof(uint8_t) * 8;
   // Set 64th bit of frac to 0;
