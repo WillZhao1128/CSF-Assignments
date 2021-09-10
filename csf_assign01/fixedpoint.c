@@ -42,9 +42,8 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
 }
 
 Fixedpoint fixedpoint_create_from_hex(const char *hex) {
-  Fixedpoint new_fp;
-  new_fp.whole = 0;
-  new_fp.frac = 0;
+  Fixedpoint new_fp = fixedpoint_create(0);
+
   int index = 0;
   int is_fraction = 0;
   int count = 16;
@@ -210,14 +209,71 @@ Fixedpoint whole_overflow(Fixedpoint left, Fixedpoint right) {
   return sum_whole;
 }
 
+Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
+  Fixedpoint sum = fixedpoint_create(0);
+
+  if (pos.whole > neg.whole) {
+    sum.is_negative = 0;
+    if (pos.frac >= neg.frac) {
+      sum.whole = pos.whole - neg.whole;
+      sum.frac = pos.frac - neg.frac;
+    } else {
+      sum.whole = pos.whole - neg.whole - 1;
+      sum.frac = 18,446,744,073,709,551,615 - neg.frac;
+      sum.frac = sum.frac + pos.frac;
+    }
+  } if (pos.whole < neg.whole) {
+    sum.is_negative = 1;
+    if (pos.frac <= neg.frac) {
+      sum.whole = neg.whole - pos.whole;
+      sum.frac = neg.frac - pos.frac;
+
+    } else {
+      sum.whole = neg.whole - pos.whole - 1;
+      sum.frac = 18,446,744,073,709,551,615 - pos.frac;
+      sum.frac = sum.frac + neg.frac;
+    }
+  
+  }
+  return sum;
+}
+
+Fixedpoint add_same_sign(Fixedpoint left, Fixedpoint right) {
+  // If both + or both -, have to check overflow
+  Fixedpoint sum = fixedpoint_create(0);
+
+  uint64_t n = sizeof(uint64_t) * 8;
+
+  sum.whole = (left.whole + right.whole) % ((uint64_t) pow(2, 63));
+  sum.frac = (left.frac + right.frac) % ((uint64_t) pow(2, 63)); // Effective sum
+
+  if (left.frac > sum.frac && right.frac > sum.frac) {// This means overflow occurred in frac so add 1 to whole
+    sum.whole = sum.whole + 1;
+  }
+
+  if (left.whole > sum.whole && right.whole > sum.whole) {// This means overflow occurred
+    sum.is_overflow = 1;
+  }
+
+  return sum;
+}
+
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
   // Account for overflow, underflow, negative
-  // First, calculate the sum of the fractional parts
-  Fixedpoint sum_frac = frac_overflow(left, right);
-  // Then, calculate the sum of the whole parts
-  Fixedpoint sum = whole_overflow(left, right);
-  sum = whole_overflow(sum, sum_frac);
-  sum.frac = sum_frac.frac;
+  // Are they different sign?
+  Fixedpoint sum;
+
+  if (left.is_negative == 0 && right.is_negative == 1) {
+    sum = add_diff_sign(left, right);
+  } else if (left.is_negative == 1 && right.is_negative == 0) {
+    sum = add_diff_sign(right, left);
+  } else if (left.is_negative == 0 && right.is_negative == 0) {
+    sum = add_same_sign(left, right);
+  } else {
+    sum = add_same_sign(left, right);
+    sum.is_negative = 1;
+  }
+
   return sum;
 }
 
