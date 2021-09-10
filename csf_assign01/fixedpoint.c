@@ -62,8 +62,6 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
         temp[0] = hex[index];
         
         new_fp.frac += strtoul(temp, NULL, 16);
-        printf("%llu\n", new_fp.frac);
-        printf("%d\n", count);
         count--;
       }
       else{
@@ -79,13 +77,9 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
       return new_fp;
     }
   }
-  printf("%llu\n", new_fp.frac);
-  printf("%d\n", count);
   for(int i = 0; i< count; i++){
     new_fp.frac *= 16;
   }
-  
-  printf("%llu\n", new_fp.frac);
   return new_fp;
   
 }

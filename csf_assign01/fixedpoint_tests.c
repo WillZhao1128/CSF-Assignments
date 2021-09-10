@@ -275,6 +275,4 @@ void test_create_from_hex2(TestObjs *objs) {
   ASSERT(fixedpoint_is_valid(val1));
   ASSERT(3503398944222727 == fixedpoint_whole_part(val1));
   ASSERT(8814070718616800336 == fixedpoint_frac_part(val1));
-
-  
 }
