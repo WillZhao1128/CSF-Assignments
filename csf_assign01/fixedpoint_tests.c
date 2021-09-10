@@ -313,7 +313,7 @@ void test_add3(TestObjs *objs) {
   lhs = fixedpoint_create_from_hex("1.8000000000000000");
   rhs = lhs;
   sum = fixedpoint_add(lhs, rhs);
-  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(!fixedpoint_is_neg(sum));
   ASSERT(3 == fixedpoint_whole_part(sum));
   ASSERT(0 == fixedpoint_frac_part(sum));
 }
