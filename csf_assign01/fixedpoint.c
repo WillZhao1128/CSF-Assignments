@@ -21,6 +21,10 @@ Fixedpoint fixedpoint_create(uint64_t whole) {
   Fixedpoint new_fp;
   new_fp.whole = whole;
   new_fp.frac = 0;
+  new_fp.is_negative = 0;
+  new_fp.invalid = 0;
+  new_fp.is_underflow = 0;
+  new_fp.is_overflow = 0;
 
   return new_fp;
 }
@@ -30,6 +34,10 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
   Fixedpoint new_fp;
   new_fp.whole = whole;
   new_fp.frac = frac;
+  new_fp.is_negative = 0;
+  new_fp.invalid = 0;
+  new_fp.is_underflow = 0;
+  new_fp.is_overflow = 0;
   return new_fp;
 }
 
@@ -97,6 +105,43 @@ Fixedpoint frac_overflow(Fixedpoint left, Fixedpoint right) {
 
   // If one is negative, no overflow is possible. Return sum/diff
   uint64_t n = sizeof(uint64_t) * 8;
+
+  if (left.is_negative == 0 && right.is_negative == 1) {
+    if (left.whole > right.whole) {
+      if (left.frac > right.frac) {
+        sum_frac.frac = left.frac - right.frac;
+      } else {
+        sum_frac.frac = right.frac - left.frac;
+        sum_frac.is_negative = 1;
+      }
+    } else if (left.whole < right.whole) {
+      if (left.frac > right.frac) {
+        sum_frac.frac = left.frac - right.frac;
+      } else {
+        sum_frac.frac = right.frac - left.frac;
+        sum_frac.is_negative = 1;
+      }
+    }
+  } else if (right.is_negative == 0 && left.is_negative == 1) {
+    if (right.whole > left.whole) {
+      if (right.frac > left.frac) {
+        sum_frac.frac = right.frac - left.frac;
+      } else {
+        sum_frac.frac = left.frac - right.frac;
+        sum_frac.is_negative = 1;
+      }
+    } else if (right.whole < left.whole) {
+      if (right.frac > left.frac) {
+        sum_frac.frac = right.frac - left.frac;
+      } else {
+        sum_frac.frac = left.frac - right.frac;
+        sum_frac.is_negative = 1;
+      }
+    }
+    return sum_frac;
+  }
+
+  /*
   if (left.is_negative != right.is_negative) {
     if (left.frac > right.frac) {
       sum_frac.frac = left.frac - right.frac;
@@ -111,6 +156,7 @@ Fixedpoint frac_overflow(Fixedpoint left, Fixedpoint right) {
     }
     return sum_frac;
   }
+  */
 
   // If both + or both -, overflow can occur
   if (left.is_negative && right.is_negative) {
@@ -215,37 +261,37 @@ int fixedpoint_is_zero(Fixedpoint val) {
 
 int fixedpoint_is_err(Fixedpoint val) {
   // TODO: implement
-  assert(0);
+  
   return 0;
 }
 
 int fixedpoint_is_neg(Fixedpoint val) {
   // TODO: implement
-  assert(0);
-  return 0;
+  
+  return val.is_negative;
 }
 
 int fixedpoint_is_overflow_neg(Fixedpoint val) {
   // TODO: implement
-  assert(0);
+  
   return 0;
 }
 
 int fixedpoint_is_overflow_pos(Fixedpoint val) {
   // TODO: implement
-  assert(0);
+  
   return 0;
 }
 
 int fixedpoint_is_underflow_neg(Fixedpoint val) {
   // TODO: implement
-  assert(0);
+  
   return 0;
 }
 
 int fixedpoint_is_underflow_pos(Fixedpoint val) {
   // TODO: implement
-  assert(0);
+  
   return 0;
 }
 
@@ -256,7 +302,7 @@ int fixedpoint_is_valid(Fixedpoint val) {
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
   // TODO: implement
-  assert(0);
+  
   char *s = malloc(20);
   strcpy(s, "<invalid>");
   return s;

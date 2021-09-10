@@ -33,7 +33,9 @@ void test_sub(TestObjs *objs);
 void test_is_overflow_pos(TestObjs *objs);
 void test_is_err(TestObjs *objs);
 // TODO: add more test functions
+void test_add2(TestObjs *objs);
 void test_create_from_hex2(TestObjs *objs);
+void test_add3(TestObjs *objs);
 
 int main(int argc, char **argv) {
   // if a testname was specified on the command line, only that
@@ -62,6 +64,8 @@ int main(int argc, char **argv) {
   //
   // here. This ensures that your test function will actually be executed.
   TEST(test_create_from_hex2);
+  TEST(test_add2);
+  TEST(test_add3);
   TEST_FINI();
 }
 
@@ -267,12 +271,50 @@ void test_is_err(TestObjs *objs) {
 
 void test_create_from_hex2(TestObjs *objs) {
   (void) objs;
-  Fixedpoint val1 = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  Fixedpoint val1 = fixedpoint_create_from_hex("d09079.1e6d601");
 
   
   printf("whole: %llu",fixedpoint_whole_part(val1));
   printf("frac: %llu",fixedpoint_frac_part(val1));
   ASSERT(fixedpoint_is_valid(val1));
-  ASSERT(3503398944222727 == fixedpoint_whole_part(val1));
-  ASSERT(8814070718616800336 == fixedpoint_frac_part(val1));
+  ASSERT(!fixedpoint_is_neg(val1));
+  ASSERT(0xd09079 == fixedpoint_whole_part(val1));
+  ASSERT(2192514215435042816 == fixedpoint_frac_part(val1));
 }
+
+void test_add2(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+  lhs = fixedpoint_create_from_hex("-c7252a193ae07.7a51de9ea0538c5");
+  rhs = fixedpoint_create_from_hex("d09079.1e6d601");
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+
+  printf("\nlhs: neg? %u\n",fixedpoint_is_neg(lhs));
+  printf("lhs: whole %lu\n",fixedpoint_whole_part(lhs));
+  printf("lhs: frac %lu\n",fixedpoint_frac_part(lhs));
+  
+  printf("rhs: neg? %u\n",fixedpoint_is_neg(rhs));
+  printf("rhs: whole %lu\n",fixedpoint_whole_part(rhs));
+  printf("rhs: frac %lu\n",fixedpoint_frac_part(rhs));
+
+  printf("sum: neg? %u\n",fixedpoint_is_neg(sum));
+  printf("sum: whole %lu\n",fixedpoint_whole_part(sum));
+  printf("sum: frac %lu\n",fixedpoint_frac_part(sum));
+  ASSERT((3503398930554254) == fixedpoint_whole_part(sum));
+  ASSERT((6621556503181757520) == fixedpoint_frac_part(sum));
+}
+void test_add3(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint lhs, rhs, sum;
+
+  lhs = fixedpoint_create_from_hex("1.8000000000000000");
+  rhs = lhs;
+  sum = fixedpoint_add(lhs, rhs);
+  ASSERT(fixedpoint_is_neg(sum));
+  ASSERT(3 == fixedpoint_whole_part(sum));
+  ASSERT(0 == fixedpoint_frac_part(sum));
+}
+
