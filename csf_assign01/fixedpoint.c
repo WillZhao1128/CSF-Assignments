@@ -92,76 +92,92 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
   return val.frac;
 }
 
-uint64_t frac_pos_overflow(uint64_t left, uint64_t right) {
-  // Check
-  uint64_t n = sizeof(uint8_t) * 8;
-  // Set 64th bit of frac to 0;
-  uint64_t l_63 = left &= ~(1 << n);
-  uint64_t r_63 = right &= ~(1 << n);
-  uint64_t frac_sum_63 = l_63 + r_63;
+Fixedpoint frac_overflow(Fixedpoint left, Fixedpoint right) {
+  Fixedpoint sum_frac = fixedpoint_create(0);
 
-  if (frac_sum_63 >> n - 1) { // if last 63 bits add to 64th bit having 1
-    if (left >> 63 && right >> 63) {
-      return 2; // If 64th bit frac_sum_63 is 1 and 64th bit left and right = 1, 64th bit of sum = 1 and add 1 to whole
-    } else if ((left >> 63) ^ (right >> 63)) {
-      return 1; // 64th bit of sum = 0 and add 1 to whole
+  // If one is negative, no overflow is possible. Return sum/diff
+  uint64_t n = sizeof(uint64_t) * 8;
+  if (left.is_negative != right.is_negative) {
+    if (left.frac > right.frac) {
+      sum_frac.frac = left.frac - right.frac;
+      if (left.is_negative) {
+        sum_frac.is_negative = 1;
+      }
     } else {
-      return 0; // no overflow
-    } 
-  } else { // if last 63 bits do not add to 1
-    if (left >> 63 && right >> 63) { // 
-      return 1; //64th bit of sum = 0 and add 1 to whole
-    } else {
-      return 0; // no overflow
+      sum_frac.frac = right.frac - left.frac;
+      if (right.is_negative) {
+        sum_frac.is_negative = 1;
+      }
     }
+    return sum_frac;
   }
+
+  // If both + or both -, overflow can occur
+  if (left.is_negative && right.is_negative) {
+    sum_frac.is_negative = 1;
+  }
+  
+  // If overflow occurs, the resulting magnitude will be less than both of the other magnitudes
+  uint64_t eff_sum = (left.frac + right.frac) % ((uint64_t) pow(2, 63));
+  sum_frac.frac = eff_sum; // Effective sum
+
+  uint64_t summed_frac = left.frac + right.frac;
+  if (left.frac > summed_frac && right.frac > summed_frac) {// This means overflow occurred
+    sum_frac.whole = 1;
+  }
+
+  return sum_frac;
+
+}
+
+Fixedpoint whole_overflow(Fixedpoint left, Fixedpoint right) {
+  Fixedpoint sum_whole = fixedpoint_create(0);
+
+  // If either is negative but not both, no possible overflow
+  if (left.is_negative != right.is_negative) {
+    if (left.whole > right.whole) {
+      sum_whole.whole = left.whole - right.whole;
+      if (left.is_negative) {
+        sum_whole.is_negative = 1;
+      }
+    } else {
+      sum_whole.whole = right.whole - left.whole;
+      if (right.is_negative) {
+        sum_whole.is_negative = 1;
+      }
+    }
+    return sum_whole;
+  }
+
+  // If both + or both -, have to check overflow
+  uint64_t n = sizeof(uint64_t) * 8;
+
+  if (left.is_negative && right.is_negative) {
+    sum_whole.is_negative = 1;
+  }
+
+  sum_whole.whole = left.whole + right.whole;
+  if (left.whole > sum_whole.whole && right.whole > sum_whole.whole) {// This means overflow occurred
+    sum_whole.is_overflow = 1;
+  }
+
+  return sum_whole;
 }
 
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
-  // Psuedocode: Must check for +overflow or -overflow
-  // +Overflow: Sum the 63 lowest bits. If the result has the 64 bit being 1,
-  //            then if either left or right has a 1 in the 64th place, then
-  //            + overflow occurs.
-  // -Overflow: Same process, but only occurs for two negative.
-  // If fractional part overflows, then must add 1 to whole num;
-
-  /*
-
-  Fixedpoint sum;
-  if (left.is_negative == 0) {
-    if (right.is_negative == 0) { // +left + right. Possible +overflow
-    uint64_t frac_overflow = frac_pos_overflow(left.frac, right.frac);
-      if (frac_overflow == 2) {
-        sum.frac = ((left.frac &= ~(1 << n)) + (right.frac &= ~(1 << n))) |= (1 << 64);
-        if (!frac_pos_overflow(left.whole, right.whole)) {
-          uint64_t sum.whole = left.whole + right.whole;
-          if (!frac_pos_overflow(sum.whole, 1) {
-            uint64_t sum.whole = left.whole + right.whole;
-            return sum;
-          }
-        } else {
-          sum.is_overflow = 1;
-          sum.is_negative = 0;
-          return sum;
-        }
-      } else {
-        sum.whole = left.whole + right.whole;
-        sum.frac = left.frac + right.frac;
-      }
-    } else { // +left - right. Possible to have negative number
-      if (left.whole )
-
-    }
-  }
-
-  return DUMMY;
-  */
+  // Account for overflow, underflow, negative
+  // First, calculate the sum of the fractional parts
+  Fixedpoint sum_frac = frac_overflow(left, right);
+  // Then, calculate the sum of the whole parts
+  Fixedpoint sum = whole_overflow(left, right);
+  sum = whole_overflow(sum, sum_frac);
+  sum.frac = sum_frac.frac;
+  return sum;
 }
 
 Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
   Fixedpoint right_negate = fixedpoint_negate(right);
   Fixedpoint diff = fixedpoint_add(left, right_negate);
-
   return diff;
 }
 
