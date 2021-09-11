@@ -78,6 +78,7 @@ TestObjs *setup(void) {
   objs->one_fourth = fixedpoint_create2(0UL, 0x4000000000000000UL);
   objs->large1 = fixedpoint_create2(0x4b19efceaUL, 0xec9a1e2418UL);
   objs->large2 = fixedpoint_create2(0xfcbf3d5UL, 0x4d1a23c24fafUL);
+  objs->max = fixedpoint_create2(0xffffffffffffffffUL, 0xffffffffffffffffUL);
 
   return objs;
 }
@@ -272,10 +273,6 @@ void test_is_err(TestObjs *objs) {
 void test_create_from_hex2(TestObjs *objs) {
   (void) objs;
   Fixedpoint val1 = fixedpoint_create_from_hex("d09079.1e6d601");
-
-  
-  printf("whole: %llu",fixedpoint_whole_part(val1));
-  printf("frac: %llu",fixedpoint_frac_part(val1));
   ASSERT(fixedpoint_is_valid(val1));
   ASSERT(!fixedpoint_is_neg(val1));
   ASSERT(0xd09079 == fixedpoint_whole_part(val1));
@@ -291,6 +288,7 @@ void test_add2(TestObjs *objs) {
   sum = fixedpoint_add(lhs, rhs);
   ASSERT(fixedpoint_is_neg(sum));
 
+  /*
   printf("\nlhs: neg? %u\n",fixedpoint_is_neg(lhs));
   printf("lhs: whole %lu\n",fixedpoint_whole_part(lhs));
   printf("lhs: frac %lu\n",fixedpoint_frac_part(lhs));
@@ -302,6 +300,7 @@ void test_add2(TestObjs *objs) {
   printf("sum: neg? %u\n",fixedpoint_is_neg(sum));
   printf("sum: whole %lu\n",fixedpoint_whole_part(sum));
   printf("sum: frac %lu\n",fixedpoint_frac_part(sum));
+  */
   ASSERT((3503398930554254) == fixedpoint_whole_part(sum));
   ASSERT((6621556503181757520) == fixedpoint_frac_part(sum));
 }

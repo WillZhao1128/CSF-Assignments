@@ -22,7 +22,7 @@ Fixedpoint fixedpoint_create(uint64_t whole) {
   new_fp.whole = whole;
   new_fp.frac = 0;
   new_fp.is_negative = 0;
-  new_fp.invalid = 0;
+  new_fp.is_err = 0;
   new_fp.is_underflow = 0;
   new_fp.is_overflow = 0;
 
@@ -35,7 +35,7 @@ Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
   new_fp.whole = whole;
   new_fp.frac = frac;
   new_fp.is_negative = 0;
-  new_fp.invalid = 0;
+  new_fp.is_err = 0;
   new_fp.is_underflow = 0;
   new_fp.is_overflow = 0;
   return new_fp;
@@ -51,39 +51,54 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   if(hex[index] == '-'){
     new_fp.is_negative = 1;
     index++;
-  }
-  else if(!(isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71))){
-    new_fp.invalid = 1;
+  } else if(!(isdigit(hex[index]) || !(96 < hex[index] && hex[index] < 103) || !( 64 < hex[index] && hex[index] < 71))){
+    new_fp.is_err = 1;
     return new_fp;
   }
-
-  while(index < (int)strlen(hex)){
+  
+  int whole_len_counter = 1;
+  int frac_len_counter = 0;
+  while(index < (int)strlen(hex)){    
     if(hex[index] == '.'){
+      if(is_fraction == 1) {
+        new_fp.is_err = 1;
+        return new_fp;
+      }
       is_fraction = 1;
+      frac_len_counter = 1;
       index++;
-    }
-    else if( isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71)){
+    } else if(isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71)){
       if(is_fraction){
+        if(frac_len_counter > 16) {
+          new_fp.is_err = 1;
+          return new_fp;
+        }
         new_fp.frac *= 16;
         char temp[2] = {'\0', '\0'};
         temp[0] = hex[index];
         
         new_fp.frac += strtoul(temp, NULL, 16);
+        frac_len_counter++;
         count--;
-      }
-      else{
+      } else {
+        if(whole_len_counter > 16) {
+          new_fp.is_err = 1;
+          return new_fp;
+        }
         new_fp.whole *= 16;
         char temp[2] = {'\0', '\0'};
         temp[0] = hex[index]; 
         new_fp.whole += strtoul(temp, NULL, 16);
+        whole_len_counter++;
       }
       index++;
-    }
-    else{
-      new_fp.invalid = 1;
+    } else {
+      
+      new_fp.is_err = 1;
       return new_fp;
     }
   }
+
   for(int i = 0; i< count; i++){
     new_fp.frac *= 16;
   }
@@ -168,7 +183,7 @@ Fixedpoint add_same_sign(Fixedpoint left, Fixedpoint right) {
 
 Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
   // Account for overflow, underflow, negative
-  Fixedpoint sum;
+  Fixedpoint sum = fixedpoint_create(0);
 
   if (left.is_negative == 0 && right.is_negative == 1) {
     sum = add_diff_sign(left, right);
@@ -191,24 +206,41 @@ Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
 }
 
 Fixedpoint fixedpoint_negate(Fixedpoint val) {
-  val.is_negative = !val.is_negative;
+  if (fixedpoint_is_zero(val)) {
+    return val;
+  } else if (val.is_negative == 0) {
+    val.is_negative = 1;
+  } else {
+    val.is_negative = 0;
+  }
+
   return val;
 }
 
 Fixedpoint fixedpoint_halve(Fixedpoint val) {
   // TODO: implement
-  assert(0);
-  return DUMMY;
+
+  Fixedpoint half = fixedpoint_create(0);
+  if (val.frac % 2 != 0) { // Causes underflow
+    val.is_underflow = 1;
+    return val;
+  }
+
+  uint64_t whole_frac = 0;
+  if (val.whole % 2 != 0) {
+    half.whole = val.whole / 2;
+    whole_frac = 0x8000000000000000;
+  }
+  half.frac = val.frac / 2 + whole_frac;
+  return half;
 }
 
 Fixedpoint fixedpoint_double(Fixedpoint val) {
-  // TODO: implement
   Fixedpoint doubled = fixedpoint_add(val, val);
   return doubled;
 }
 
 int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
-  // TODO: implement
   int compare = 0;;
   if (fixedpoint_is_zero(left) == 1 && fixedpoint_is_zero(right) == 1) {
     return compare;
@@ -251,44 +283,35 @@ int fixedpoint_is_zero(Fixedpoint val) {
 }
 
 int fixedpoint_is_err(Fixedpoint val) {
-  // TODO: implement
-  
-  return 0;
+  return val.is_err;
 }
 
 int fixedpoint_is_neg(Fixedpoint val) {
-  // TODO: implement
-  
   return val.is_negative;
 }
 
 int fixedpoint_is_overflow_neg(Fixedpoint val) {
-  // TODO: implement
-  
-  return 0;
+  return val.is_overflow && val.is_negative;
 }
 
 int fixedpoint_is_overflow_pos(Fixedpoint val) {
-  // TODO: implement
-  
-  return 0;
+  return val.is_overflow && !val.is_negative;
 }
 
 int fixedpoint_is_underflow_neg(Fixedpoint val) {
-  // TODO: implement
-  
-  return 0;
+  return val.is_underflow && val.is_negative;
 }
 
 int fixedpoint_is_underflow_pos(Fixedpoint val) {
-  // TODO: implement
-  
-  return 0;
+  return val.is_underflow && !val.is_negative;
 }
 
 int fixedpoint_is_valid(Fixedpoint val) {
-  // TODO: implement
-  return !val.invalid;
+  if (val.is_err || val.is_overflow || val.is_underflow) {
+    return 0;
+  } else {
+    return 1;
+  }
 }
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
