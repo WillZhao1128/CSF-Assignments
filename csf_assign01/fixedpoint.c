@@ -45,13 +45,16 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   int is_fraction = 0;
   int count = 16;
 
-  if(hex[index] == '-'){
+  if(hex[index] == '-') {
     new_fp.is_negative = 1;
     index++;
-  } else if(!(isdigit(hex[index]) || !(96 < hex[index] && hex[index] < 103) || !( 64 < hex[index] && hex[index] < 71))){
+  } 
+  if( !(isdigit(hex[index])) && (!(96 < hex[index] && hex[index] < 103)) && (!(64 < hex[index] && hex[index] < 71)) ){
     new_fp.is_err = 1;
+    printf("hello");
     return new_fp;
   }
+  
   
   int whole_len_counter = 1;
   int frac_len_counter = 0;
@@ -162,19 +165,22 @@ Fixedpoint add_same_sign(Fixedpoint left, Fixedpoint right) {
   // Note: If both + or both -, have to check overflow
   Fixedpoint sum = fixedpoint_create(0);
 
-  
-
-  sum.whole = (left.whole + right.whole) % ((uint64_t) pow(2, 63));
-  sum.frac = (left.frac + right.frac) % ((uint64_t) pow(2, 63)); // Effective sum
+  uint64_t whole = (left.whole + right.whole);
+  sum.frac = (left.frac + right.frac);
 
   if (left.frac > sum.frac && right.frac > sum.frac) {// This means overflow occurred in frac so add 1 to whole
-    sum.whole = sum.whole + 1;
+    whole = whole + 1;
+    if (whole > (whole + 1)) {
+      sum.is_overflow = 1;
+      return sum;
+    }
   }
+  sum.whole = whole;
 
   if (left.whole > sum.whole && right.whole > sum.whole) {// This means overflow occurred
     sum.is_overflow = 1;
   }
-
+  
   return sum;
 }
 

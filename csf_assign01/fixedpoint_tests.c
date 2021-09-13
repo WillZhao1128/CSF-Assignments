@@ -15,6 +15,8 @@ typedef struct {
   Fixedpoint min_magnitude;
   Fixedpoint max;
   Fixedpoint min;
+  Fixedpoint half_max;
+  Fixedpoint half_max_almost;
 
   // TODO: add more objects to the test fixture
 } TestObjs;
@@ -36,9 +38,14 @@ void test_is_err(TestObjs *objs);
 // TODO: add more test functions
 void test_add2(TestObjs *objs);
 void test_create_from_hex2(TestObjs *objs);
+void test_is_err2(TestObjs *objs);
 void test_add3(TestObjs *objs);
 void test_halve(TestObjs *objs);
 void test_double(TestObjs *objs);
+void test_is_overflow_pos2(TestObjs *objs);
+void test_compare(TestObjs *objs);
+void test_is_valid(TestObjs *objs);
+
 
 int main(int argc, char **argv) {
   // if a testname was specified on the command line, only that
@@ -67,10 +74,14 @@ int main(int argc, char **argv) {
   //
   // here. This ensures that your test function will actually be executed.
   TEST(test_create_from_hex2);
+  TEST(test_is_err2);
   TEST(test_add2);
   TEST(test_add3);
   TEST(test_halve);
   TEST(test_double);
+  TEST(test_is_overflow_pos2);
+  TEST(test_compare);
+  TEST(test_is_valid);
   TEST_FINI();
 }
 
@@ -86,6 +97,9 @@ TestObjs *setup(void) {
   objs->large3 = fixedpoint_create2(0x3fcbf3d5UL, 0xed1a23c79fa00000UL);
   objs->max = fixedpoint_create2(0xffffffffffffffffUL, 0xffffffffffffffffUL);
   objs->min = fixedpoint_create2(0UL, 0x1UL);
+  objs->half_max = fixedpoint_create(0x8000000000000000UL);
+  objs->half_max_almost = fixedpoint_create_from_hex("7FFFFFFFFFFFFFFF.7FFFFFFFFFFFFFFF");
+
 
   return objs;
 }
@@ -269,22 +283,79 @@ void test_is_err(TestObjs *objs) {
 }
 
 // TODO: implement more test functions
+/*
+MS 1 Test Funtions: 
+fixedpoint_create // DONE (other fnc rely)
+fixedpoint_create2 // DONE (other fnc rely)
+fixedpoint_whole_part // DONE (given)
+fixedpoint_frac_part // DONE (given)
+fixedpoint_is_zero // DONE (given)
 
-// MS 1 Test Funtions: 
-// fixedpoint_create
-// fixedpoint_create2
-// fixedpoint_whole_part
-// fixedpoint_frac_part
-// fixedpoint_is_zero
+MS 2 Test Functions
+fixedpoint_create_from_hex // DONE (have 2 tests)
+fixedpoint_negate // given
+fixedpoint_add // DONE (3 tests)
+fixedpoint_sub // DONE (same as add)
+fixedpoint_halve // DONE
+fixedpoint_double // DONE
+fixedpoint_compare // DONE
+fixedpoint_is_err // DONE
+fixedpoint_is_neg // contained in most other tests
+fixedpoint_is_overflow_neg // given
+fixedpoint_is_overflow_pos // given
+fixedpoint_is_underflow_neg // tested in fnc test_halve
+fixedpoint_is_underflow_pos // tested in fnc test_halve
+fixedpoint_is_valid // tested multiple times
+fixedpoint_format_as_hex // given
+*/
 
 void test_create_from_hex2(TestObjs *objs) {
   (void) objs;
+
+  // Test positive
   Fixedpoint val1 = fixedpoint_create_from_hex("d09079.1e6d601");
+  ASSERT(!fixedpoint_is_err(val1));
   ASSERT(fixedpoint_is_valid(val1));
   ASSERT(!fixedpoint_is_neg(val1));
   ASSERT(0xd09079 == fixedpoint_whole_part(val1));
   ASSERT(2192514215435042816 == fixedpoint_frac_part(val1));
+
+  // Test negative
+  Fixedpoint val2 = fixedpoint_create_from_hex("-d09079.1e6d601");
+  ASSERT(!fixedpoint_is_err(val2));
+  ASSERT(fixedpoint_is_valid(val2));
+  ASSERT(fixedpoint_is_neg(val2));
+  ASSERT(0xd09079 == fixedpoint_whole_part(val2));
+  ASSERT(2192514215435042816 == fixedpoint_frac_part(val2));
+
+  // Test starts with 0
+  Fixedpoint val3 = fixedpoint_create_from_hex("0.1e6d601");
+  ASSERT(!fixedpoint_is_err(val3));
+  ASSERT(fixedpoint_is_valid(val3));
+  ASSERT(!fixedpoint_is_neg(val3));
+  ASSERT(0 == fixedpoint_whole_part(val3));
+  ASSERT(2192514215435042816 == fixedpoint_frac_part(val3));
 }
+
+void test_is_err2(TestObjs *objs) {
+  (void) objs;
+  // Starts with "."
+  Fixedpoint err1 = fixedpoint_create_from_hex(".6666666666666666");
+  ASSERT(fixedpoint_is_err(err1));
+
+  // Has @
+  Fixedpoint err2 = fixedpoint_create_from_hex("@.0");
+  ASSERT(fixedpoint_is_err(err2));
+
+  // Has G
+  Fixedpoint err3 = fixedpoint_create_from_hex("G.0");
+  ASSERT(fixedpoint_is_err(err3));
+
+  // "-" and starts with "."
+  Fixedpoint err4 = fixedpoint_create_from_hex("-.6666666666666666");
+  ASSERT(fixedpoint_is_err(err4));
+}
+
 
 void test_add2(TestObjs *objs) {
   (void) objs;
@@ -294,20 +365,6 @@ void test_add2(TestObjs *objs) {
   rhs = fixedpoint_create_from_hex("d09079.1e6d601");
   sum = fixedpoint_add(lhs, rhs);
   ASSERT(fixedpoint_is_neg(sum));
-
-  /*
-  printf("\nlhs: neg? %u\n",fixedpoint_is_neg(lhs));
-  printf("lhs: whole %lu\n",fixedpoint_whole_part(lhs));
-  printf("lhs: frac %lu\n",fixedpoint_frac_part(lhs));
-  
-  printf("rhs: neg? %u\n",fixedpoint_is_neg(rhs));
-  printf("rhs: whole %lu\n",fixedpoint_whole_part(rhs));
-  printf("rhs: frac %lu\n",fixedpoint_frac_part(rhs));
-
-  printf("sum: neg? %u\n",fixedpoint_is_neg(sum));
-  printf("sum: whole %lu\n",fixedpoint_whole_part(sum));
-  printf("sum: frac %lu\n",fixedpoint_frac_part(sum));
-  */
   ASSERT((3503398930554254) == fixedpoint_whole_part(sum));
   ASSERT((6621556503181757520) == fixedpoint_frac_part(sum));
 }
@@ -354,17 +411,69 @@ void test_double(TestObjs *objs) {
   Fixedpoint double_large3 = fixedpoint_double(objs->large3);
   Fixedpoint zero = fixedpoint_double(objs->zero);
   
-  
   ASSERT(fixedpoint_is_overflow_pos(positive_overflow));
   ASSERT(fixedpoint_is_overflow_neg(negative_overflow));
-  printf("%lu\n", fixedpoint_whole_part(double_large3));
-  printf("%lu\n", fixedpoint_frac_part(double_large3));
 
-  ASSERT( 0x9633df9d4UL == fixedpoint_whole_part(double_large1));
+  ASSERT(0x9633df9d4UL == fixedpoint_whole_part(double_large1));
   ASSERT(0x1d9343c4830UL == fixedpoint_frac_part(double_large1));
   ASSERT(0x7f97e7abUL == fixedpoint_whole_part(double_large3));
-  ASSERT(0xda34478f3f40000UL == fixedpoint_frac_part(double_large3));
+
+  ASSERT(0xda34478f3f400000UL == fixedpoint_frac_part(double_large3));
   ASSERT(0 == fixedpoint_whole_part(zero));
   ASSERT(0 == fixedpoint_frac_part(zero));
 }
 
+void test_is_overflow_pos2(TestObjs *objs) {
+  Fixedpoint sum;
+
+  sum = fixedpoint_add(objs->max, objs->max);
+  ASSERT(fixedpoint_is_overflow_pos(sum));
+
+  sum = fixedpoint_add(objs->half_max, objs->half_max);
+  ASSERT(fixedpoint_is_overflow_pos(sum));
+
+  sum = fixedpoint_add(objs->half_max_almost, objs->half_max_almost);
+  ASSERT(!fixedpoint_is_overflow_pos(sum));
+}
+
+void test_compare(TestObjs *objs) {
+  // Test close values
+
+  ASSERT(1 == fixedpoint_compare(objs->half_max, objs->half_max_almost));
+  ASSERT(0 == fixedpoint_compare(objs->half_max, objs->half_max));
+  ASSERT(-1 == fixedpoint_compare(objs->half_max_almost, objs->half_max));
+
+  Fixedpoint neg_half_max = fixedpoint_negate(objs->half_max);
+
+  ASSERT(-1 == fixedpoint_compare(neg_half_max, objs->half_max_almost));
+  ASSERT(0 == fixedpoint_compare(neg_half_max, neg_half_max));
+  ASSERT(1 == fixedpoint_compare(objs->half_max_almost, neg_half_max));
+
+}
+
+void test_is_valid(TestObjs *objs) {
+  // Overflow
+  Fixedpoint positive_overflow = fixedpoint_double(objs->max);
+  Fixedpoint neg_max = fixedpoint_negate(objs->max);
+  Fixedpoint negative_overflow = fixedpoint_double(neg_max);
+  ASSERT(fixedpoint_is_overflow_pos(positive_overflow));
+  ASSERT(fixedpoint_is_overflow_neg(negative_overflow));
+  ASSERT(!fixedpoint_is_valid(positive_overflow));
+  ASSERT(!fixedpoint_is_valid(negative_overflow));
+
+
+  // Underflow
+  Fixedpoint positive_underflow = fixedpoint_halve(objs->large2);
+  Fixedpoint neg_large2 = fixedpoint_negate(objs->large2);
+  Fixedpoint negative_underflow = fixedpoint_halve(neg_large2);
+  ASSERT(fixedpoint_is_underflow_pos(positive_underflow));
+  ASSERT(fixedpoint_is_underflow_neg(negative_underflow));
+  ASSERT(!fixedpoint_is_valid(positive_underflow));
+  ASSERT(!fixedpoint_is_valid(negative_underflow));
+
+
+  // is_err
+  Fixedpoint err = fixedpoint_create_from_hex(".6666666666666666");
+  ASSERT(fixedpoint_is_err(err));
+  ASSERT(!fixedpoint_is_valid(err));
+}
