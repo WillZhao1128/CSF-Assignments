@@ -13,9 +13,6 @@
 #include "fixedpoint.h"
 #include <math.h>
 
-// You can remove this once all of the functions are fully implemented
-static Fixedpoint DUMMY;
-
 Fixedpoint fixedpoint_create(uint64_t whole) {
   
   Fixedpoint new_fp;
@@ -133,7 +130,7 @@ Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
       sum.frac = pos.frac - neg.frac;
     } else {
       sum.whole = pos.whole - neg.whole - 1;
-      sum.frac = 18,446,744,073,709,551,615 - neg.frac;
+      sum.frac = 0xFFFFFFFFFFFFFFFF - neg.frac;
       sum.frac = sum.frac + pos.frac;
     }
   } if (pos.whole < neg.whole) {
@@ -144,7 +141,7 @@ Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
 
     } else {
       sum.whole = neg.whole - pos.whole - 1;
-      sum.frac = 18,446,744,073,709,551,615 - pos.frac;
+      sum.frac = 0xFFFFFFFFFFFFFFFF - pos.frac;
       sum.frac = sum.frac + neg.frac;
     }
   
@@ -165,7 +162,7 @@ Fixedpoint add_same_sign(Fixedpoint left, Fixedpoint right) {
   // Note: If both + or both -, have to check overflow
   Fixedpoint sum = fixedpoint_create(0);
 
-  uint64_t n = sizeof(uint64_t) * 8;
+  
 
   sum.whole = (left.whole + right.whole) % ((uint64_t) pow(2, 63));
   sum.frac = (left.frac + right.frac) % ((uint64_t) pow(2, 63)); // Effective sum
@@ -227,10 +224,12 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
   }
 
   uint64_t whole_frac = 0;
+  half.whole = val.whole / 2;
+
   if (val.whole % 2 != 0) {
-    half.whole = val.whole / 2;
     whole_frac = 0x8000000000000000;
   }
+  
   half.frac = val.frac / 2 + whole_frac;
   return half;
 }
@@ -316,8 +315,67 @@ int fixedpoint_is_valid(Fixedpoint val) {
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
   // TODO: implement
-  
-  char *s = malloc(20);
-  strcpy(s, "<invalid>");
+  char *s = malloc(34);
+  char reverse[34];
+  int index = 0;
+  uint64_t whole = val.whole;
+  uint64_t frac = val.frac;
+
+  if(frac != 0){
+    int count = 0;
+
+    while(frac % 16 == 0){
+      frac /= 16;
+      count++;
+    }
+
+    while(frac != 0){
+      int digit = frac % 16;
+      if(digit < 10){
+      reverse[index] = digit + '0';
+      }
+      else{
+        reverse[index] = digit + 'W';
+      }
+
+    frac /= 16;
+    index++;
+    count++;
+
+    }
+
+    for(int i = 16; i > count; i--){
+      reverse[index] = '0';
+      index++;
+    }
+
+    reverse[index] = '.';
+    index++;
+  }
+
+  if(whole == 0){
+    reverse[index] = '0';
+    index++;
+  }
+
+  while(whole != 0){
+    int digit = whole % 16;
+    
+    if(digit < 10){
+      reverse[index] = digit + '0';
+    }
+    else{
+      reverse[index] = digit + 'W';
+    }
+
+    whole /= 16;
+    index++;
+  }
+
+  for(int i = 0; i < index; i++){
+    s[i] = reverse[index - i - 1];
+  }
+
+  s[index] = '\0';
   return s;
 }

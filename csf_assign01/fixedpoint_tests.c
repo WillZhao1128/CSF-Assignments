@@ -11,6 +11,7 @@ typedef struct {
   Fixedpoint one_fourth;
   Fixedpoint large1;
   Fixedpoint large2;
+  Fixedpoint large3;
   Fixedpoint min_magnitude;
   Fixedpoint max;
   Fixedpoint min;
@@ -36,6 +37,8 @@ void test_is_err(TestObjs *objs);
 void test_add2(TestObjs *objs);
 void test_create_from_hex2(TestObjs *objs);
 void test_add3(TestObjs *objs);
+void test_halve(TestObjs *objs);
+void test_double(TestObjs *objs);
 
 int main(int argc, char **argv) {
   // if a testname was specified on the command line, only that
@@ -66,6 +69,8 @@ int main(int argc, char **argv) {
   TEST(test_create_from_hex2);
   TEST(test_add2);
   TEST(test_add3);
+  TEST(test_halve);
+  TEST(test_double);
   TEST_FINI();
 }
 
@@ -78,7 +83,9 @@ TestObjs *setup(void) {
   objs->one_fourth = fixedpoint_create2(0UL, 0x4000000000000000UL);
   objs->large1 = fixedpoint_create2(0x4b19efceaUL, 0xec9a1e2418UL);
   objs->large2 = fixedpoint_create2(0xfcbf3d5UL, 0x4d1a23c24fafUL);
+  objs->large3 = fixedpoint_create2(0x3fcbf3d5UL, 0xed1a23c79fa00000UL);
   objs->max = fixedpoint_create2(0xffffffffffffffffUL, 0xffffffffffffffffUL);
+  objs->min = fixedpoint_create2(0UL, 0x1UL);
 
   return objs;
 }
@@ -315,5 +322,49 @@ void test_add3(TestObjs *objs) {
   ASSERT(!fixedpoint_is_neg(sum));
   ASSERT(3 == fixedpoint_whole_part(sum));
   ASSERT(0 == fixedpoint_frac_part(sum));
+}
+
+void test_halve(TestObjs *objs) {
+  (void) objs;
+  Fixedpoint large2_neg = fixedpoint_negate(objs->large2);
+
+  Fixedpoint positive_underflow = fixedpoint_halve(objs->large2);
+  Fixedpoint negative_underflow = fixedpoint_halve(large2_neg);
+  Fixedpoint half = fixedpoint_halve(objs->large1);
+  Fixedpoint zero = fixedpoint_halve(objs->zero);
+  Fixedpoint max_even_half = fixedpoint_halve(fixedpoint_sub(objs->max, objs->min));
+  
+  ASSERT(fixedpoint_is_underflow_pos(positive_underflow));
+  ASSERT(fixedpoint_is_underflow_neg(negative_underflow));
+  ASSERT( 0x258cf7e75UL == fixedpoint_whole_part(half));
+  ASSERT(0x764d0f120cUL == fixedpoint_frac_part(half));
+  ASSERT(0x7fffffffffffffffUL == fixedpoint_whole_part(max_even_half));
+  ASSERT(0xffffffffffffffffUL == fixedpoint_frac_part(max_even_half));
+  ASSERT(0 == fixedpoint_whole_part(zero));
+  ASSERT(0 == fixedpoint_frac_part(zero));
+}
+
+void test_double(TestObjs *objs) {
+  (void) objs;
+
+  Fixedpoint max_neg = fixedpoint_negate(objs->max);
+  Fixedpoint positive_overflow = fixedpoint_double(objs->max);
+  Fixedpoint negative_overflow = fixedpoint_double(max_neg);
+  Fixedpoint double_large1 = fixedpoint_double(objs->large1);
+  Fixedpoint double_large3 = fixedpoint_double(objs->large3);
+  Fixedpoint zero = fixedpoint_double(objs->zero);
+  
+  
+  ASSERT(fixedpoint_is_overflow_pos(positive_overflow));
+  ASSERT(fixedpoint_is_overflow_neg(negative_overflow));
+  printf("%lu\n", fixedpoint_whole_part(double_large3));
+  printf("%lu\n", fixedpoint_frac_part(double_large3));
+
+  ASSERT( 0x9633df9d4UL == fixedpoint_whole_part(double_large1));
+  ASSERT(0x1d9343c4830UL == fixedpoint_frac_part(double_large1));
+  ASSERT(0x7f97e7abUL == fixedpoint_whole_part(double_large3));
+  ASSERT(0xda34478f3f40000UL == fixedpoint_frac_part(double_large3));
+  ASSERT(0 == fixedpoint_whole_part(zero));
+  ASSERT(0 == fixedpoint_frac_part(zero));
 }
 
