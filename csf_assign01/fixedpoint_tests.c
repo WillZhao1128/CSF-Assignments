@@ -19,6 +19,11 @@ typedef struct {
   Fixedpoint half_max_almost;
 
   // TODO: add more objects to the test fixture
+  Fixedpoint rand1;
+  Fixedpoint rand2;
+  Fixedpoint rand3;
+  Fixedpoint rand4;
+
 } TestObjs;
 
 // functions to create and destroy the test fixture
@@ -45,6 +50,7 @@ void test_double(TestObjs *objs);
 void test_is_overflow_pos2(TestObjs *objs);
 void test_compare(TestObjs *objs);
 void test_is_valid(TestObjs *objs);
+void test_rby(TestObjs *objs);
 
 
 int main(int argc, char **argv) {
@@ -65,6 +71,7 @@ int main(int argc, char **argv) {
   TEST(test_sub);
   TEST(test_is_overflow_pos);
   TEST(test_is_err);
+  TEST(test_rby);
 
   // IMPORTANT: if you add additional test functions (which you should!),
   // make sure they are included here.  E.g., if you add a test function
@@ -82,6 +89,7 @@ int main(int argc, char **argv) {
   TEST(test_is_overflow_pos2);
   TEST(test_compare);
   TEST(test_is_valid);
+  TEST(test_rby);
   TEST_FINI();
 }
 
@@ -99,7 +107,10 @@ TestObjs *setup(void) {
   objs->min = fixedpoint_create2(0UL, 0x1UL);
   objs->half_max = fixedpoint_create(0x8000000000000000UL);
   objs->half_max_almost = fixedpoint_create_from_hex("7FFFFFFFFFFFFFFF.7FFFFFFFFFFFFFFF");
-
+  objs->rand1 = fixedpoint_create_from_hex("-1d00a3e9.2580b36847");
+  objs->rand2 = fixedpoint_create_from_hex("1b3f576f1bc498.25c721eeace");
+  objs->rand3 = fixedpoint_create_from_hex("-dff58c9aa.b9a");
+  objs->rand4 = fixedpoint_create_from_hex("-1c20aaddcfd2.3ec8fadb45e52f");
 
   return objs;
 }
@@ -492,4 +503,21 @@ void test_is_valid(TestObjs *objs) {
   Fixedpoint err = fixedpoint_create_from_hex(".66666.66666666666");
   ASSERT(fixedpoint_is_err(err));
   ASSERT(!fixedpoint_is_valid(err));
+}
+
+// Test randomly generated numbers from provided Ruby script
+void test_rby(TestObjs *objs) {
+  Fixedpoint sum = fixedpoint_add(objs->rand1, objs->rand2);
+  ASSERT(0x1b3f57521b20af == fixedpoint_whole_part(sum));
+  ASSERT(0x00466e8665e00000 == fixedpoint_frac_part(sum));
+  ASSERT(!fixedpoint_is_neg(sum));
+  ASSERT(!fixedpoint_is_err(sum));
+  ASSERT(fixedpoint_is_valid(sum));
+
+  Fixedpoint diff = fixedpoint_sub(objs->rand3, objs->rand4);
+  ASSERT(0x1c12ab850627 == fixedpoint_whole_part(diff));
+  ASSERT(0x8528fadb45e52f00 == fixedpoint_frac_part(diff));
+  ASSERT(!fixedpoint_is_neg(diff));
+  ASSERT(!fixedpoint_is_err(diff));
+  ASSERT(fixedpoint_is_valid(diff));
 }
