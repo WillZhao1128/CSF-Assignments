@@ -14,7 +14,7 @@
 #include <math.h>
 
 Fixedpoint fixedpoint_create(uint64_t whole) {
-  
+  // Initialize all fields
   Fixedpoint new_fp;
   new_fp.whole = whole;
   new_fp.frac = 0;
@@ -27,7 +27,7 @@ Fixedpoint fixedpoint_create(uint64_t whole) {
 }
 
 Fixedpoint fixedpoint_create2(uint64_t whole, uint64_t frac) {
-  
+  // Initialize all fields
   Fixedpoint new_fp;
   new_fp.whole = whole;
   new_fp.frac = frac;
@@ -45,14 +45,18 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   int is_fraction = 0;
   int count = 16;
 
+  // Check negative
   if(hex[index] == '-') {
     new_fp.is_negative = 1;
     index++;
   } 
   
+  // Loop over entire string
   int whole_len_counter = 1;
   int frac_len_counter = 0;
-  while(index < (int)strlen(hex)){    
+  while(index < (int)strlen(hex)){   
+
+    // Check to see if decimal point was reached 
     if(hex[index] == '.'){
       if(is_fraction == 1) {
         new_fp.is_err = 1;
@@ -63,22 +67,25 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
       index++;
     } else if(isdigit(hex[index]) || (96 < hex[index] && hex[index] < 103) || ( 64 < hex[index] && hex[index] < 71)){
       if(is_fraction){
+        // Check length of fractional component
         if(frac_len_counter > 16) {
           new_fp.is_err = 1;
           return new_fp;
         }
+        // Calculate fractional representation
         new_fp.frac *= 16;
         char temp[2] = {'\0', '\0'};
         temp[0] = hex[index];
-        
         new_fp.frac += strtoul(temp, NULL, 16);
         frac_len_counter++;
         count--;
       } else {
+        // Check length of whole component
         if(whole_len_counter > 16) {
           new_fp.is_err = 1;
           return new_fp;
         }
+        // Calculate whole representation
         new_fp.whole *= 16;
         char temp[2] = {'\0', '\0'};
         temp[0] = hex[index]; 
@@ -88,22 +95,22 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
       index++;
     } 
     else {
-      
       new_fp.is_err = 1;
       return new_fp;
     }
   }
 
+  // Make sure representation zero pads
   for(int i = 0; i< count; i++){
     new_fp.frac *= 16;
   }
 
+  // If zero, then should not be negative
   if(new_fp.frac == 0 && new_fp.whole == 0){
     new_fp.is_negative = 0;
   }
 
   return new_fp;
-  
 }
 
 uint64_t fixedpoint_whole_part(Fixedpoint val) {
@@ -126,8 +133,10 @@ uint64_t fixedpoint_frac_part(Fixedpoint val) {
 Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
   Fixedpoint sum = fixedpoint_create(0);
 
+  // Determine which has the greater magnitude for calculation for whole
   if (pos.whole > neg.whole) {
     sum.is_negative = 0;
+    // Determine which has the greater magnitude for frac and perform respective calculation
     if (pos.frac >= neg.frac) {
       sum.whole = pos.whole - neg.whole;
       sum.frac = pos.frac - neg.frac;
@@ -136,26 +145,21 @@ Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
       sum.frac = 0xFFFFFFFFFFFFFFFF - neg.frac;
       sum.frac +=  (pos.frac + 1);
     }
-  } 
-  else if (pos.whole < neg.whole) {
+  } else if (pos.whole < neg.whole) {
     sum.is_negative = 1;
     if (pos.frac <= neg.frac) {
       sum.whole = neg.whole - pos.whole;
       sum.frac = neg.frac - pos.frac;
-
-    }
-    else {
+    } else {
       sum.whole = neg.whole - pos.whole - 1;
       sum.frac = 0xFFFFFFFFFFFFFFFF - pos.frac;
       sum.frac += (neg.frac + 1);
     }
-  }
-  else{
-    if(pos.frac >= neg.frac){
+  } else { // Accounts for case where equal
+    if (pos.frac >= neg.frac){
       sum.whole = pos.whole - neg.whole;
       sum.frac = pos.frac - neg.frac;
-    }
-    else{
+    } else {
       sum.whole = pos.whole - neg.whole;
       sum.frac = neg.frac - pos.frac;
       sum.is_negative = 1;
@@ -190,14 +194,12 @@ Fixedpoint add_same_sign(Fixedpoint left, Fixedpoint right) {
     if (whole == 0xffffffffffffffffLU) {
       sum.is_overflow = 1;
       return sum;
-    }
-    else{
+    } else {
       whole = whole + 1;
     }
   }
 
   sum.whole = whole;
-  
   
   return sum;
 }
@@ -208,18 +210,17 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
 
   if (left.is_negative == 0 && right.is_negative == 1) {
     sum = add_diff_sign(left, right);
-  } 
-  else if (left.is_negative == 1 && right.is_negative == 0) {
+  } else if (left.is_negative == 1 && right.is_negative == 0) {
     sum = add_diff_sign(right, left);
-  } 
-  else {
+  } else {
     sum = add_same_sign(left, right);
   }
-
   return sum;
 }
 
 Fixedpoint fixedpoint_sub(Fixedpoint left, Fixedpoint right) {
+  // Same as add just negate the right value
+
   Fixedpoint right_negate = fixedpoint_negate(right);
   Fixedpoint diff = fixedpoint_add(left, right_negate);
   return diff;
@@ -238,12 +239,12 @@ Fixedpoint fixedpoint_negate(Fixedpoint val) {
 }
 
 Fixedpoint fixedpoint_halve(Fixedpoint val) {
-  // TODO: implement
 
   Fixedpoint half = fixedpoint_create(0);
   half.is_negative = val.is_negative;
 
-  if (val.frac % 2 != 0) { // Causes underflow
+  // Check underflow
+  if (val.frac % 2 != 0) { 
     val.is_underflow = 1;
     return val;
   }
@@ -251,36 +252,39 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
   uint64_t whole_frac = 0;
   half.whole = val.whole / 2;
 
+  // If whole is an odd number, add 1/2 * 2^64 to frac
   if (val.whole % 2 != 0) {
     whole_frac = 0x8000000000000000;
   }
   
   half.frac = val.frac / 2 + whole_frac;
-
   return half;
 }
 
 Fixedpoint fixedpoint_double(Fixedpoint val) {
+  // Double is the same as adding the same number twice
   Fixedpoint doubled = fixedpoint_add(val, val);
   return doubled;
 }
 
 int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
   int compare = 0;;
+  // If both are zero
   if (fixedpoint_is_zero(left) == 1 && fixedpoint_is_zero(right) == 1) {
     return compare;
   }
 
+  // Check sign of each Fixedpoint
   if ((left.is_negative == 0 || fixedpoint_is_zero(left)) && right.is_negative == 1) {
     compare = 1;
   } else if (left.is_negative == 1 && (right.is_negative == 0 || fixedpoint_is_zero(right))) {
     compare = -1;
-  } else if (left.is_negative == right.is_negative) {
+  } else if (left.is_negative == right.is_negative) { // If same sign
     if (left.whole > right.whole) {
       compare = 1;
     } else if (left.whole < right.whole) {
       compare = -1;
-    } else { // equal
+    } else { // whole values are equal
       if (left.frac > right.frac) {
         compare = 1;
       } else if (left.frac < right.frac) {
@@ -291,10 +295,10 @@ int fixedpoint_compare(Fixedpoint left, Fixedpoint right) {
     }
   }
 
+  // If they were both negative, negate the compare value
   if (left.is_negative == 1 && right.is_negative == 1) {
     compare *= -1;
   }
-
   return compare;
 }
 
@@ -302,7 +306,6 @@ int fixedpoint_is_zero(Fixedpoint val) {
   if(val.whole == 0 && val.frac == 0){
     return 1;
   }
-
   return 0;
   
 }
@@ -340,14 +343,13 @@ int fixedpoint_is_valid(Fixedpoint val) {
 }
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
-  // TODO: implement
   char *s = malloc(35);
   char reverse[35];
   int index = 0;
   uint64_t whole = val.whole;
   uint64_t frac = val.frac;
 
-  if(frac != 0){
+  if (frac != 0){
     int count = 0;
 
     while(frac % 16 == 0){
@@ -355,12 +357,11 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
       count++;
     }
 
-    while(frac != 0){
+    while (frac != 0){
       int digit = frac % 16;
-      if(digit < 10){
+      if (digit < 10){
       reverse[index] = digit + '0';
-      }
-      else{
+      } else {
         reverse[index] = digit + 'W';
       }
 
@@ -379,31 +380,28 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     index++;
   }
 
-  if(whole == 0){
+  if (whole == 0){
     reverse[index] = '0';
     index++;
   }
 
-  while(whole != 0){
+  while (whole != 0){
     int digit = whole % 16;
-    
-    if(digit < 10){
+    if (digit < 10){
       reverse[index] = digit + '0';
-    }
-    else{
+    } else {
       reverse[index] = digit + 'W';
     }
-
     whole /= 16;
     index++;
   }
 
-  if(val.is_negative){
+  if (val.is_negative){
     reverse[index] = '-';
     index++;
   }
 
-  for(int i = 0; i < index; i++){
+  for (int i = 0; i < index; i++){
     s[i] = reverse[index - i - 1];
   }
 

@@ -9,5 +9,10 @@ Will Zhao: Wrote the code in C++. Tested functions.
 
 
 HW Contributions for Milestone2:
-Aidan Aug: Implemented all functions related to the "add" function (including over and underflow) and created additional testing for functions
-Will Zhao: Implemented all functions related to conversion between hex and Fixedpoint and created additional testing for functions
+Aidan Aug: 1. Implemented all functions related to the "add" function (including over and underflow) and created additional testing for functions.
+           2. Ensured style guidelines were followed.
+
+Will Zhao: 1. Implemented all functions related to conversion between hex and Fixedpoint and created additional testing for functions.
+           2. Checked valgrind.
+
+Both: Created test functions for each other's functions and debugged each other's in order to ensure they passed all tests.
