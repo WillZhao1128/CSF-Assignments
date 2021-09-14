@@ -49,11 +49,6 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     new_fp.is_negative = 1;
     index++;
   } 
-
-  if( !(isdigit(hex[index])) && (!(96 < hex[index] && hex[index] < 103)) && (!(64 < hex[index] && hex[index] < 71)) ){
-    new_fp.is_err = 1;
-    return new_fp;
-  }
   
   int whole_len_counter = 1;
   int frac_len_counter = 0;
@@ -91,7 +86,8 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
         whole_len_counter++;
       }
       index++;
-    } else {
+    } 
+    else {
       
       new_fp.is_err = 1;
       return new_fp;
@@ -101,6 +97,11 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
   for(int i = 0; i< count; i++){
     new_fp.frac *= 16;
   }
+
+  if(new_fp.frac == 0 && new_fp.whole == 0){
+    new_fp.is_negative = 0;
+  }
+
   return new_fp;
   
 }
@@ -133,20 +134,32 @@ Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
     } else {
       sum.whole = pos.whole - neg.whole - 1;
       sum.frac = 0xFFFFFFFFFFFFFFFF - neg.frac;
-      sum.frac = sum.frac + pos.frac;
+      sum.frac +=  (pos.frac + 1);
     }
-  } if (pos.whole < neg.whole) {
+  } 
+  else if (pos.whole < neg.whole) {
     sum.is_negative = 1;
     if (pos.frac <= neg.frac) {
       sum.whole = neg.whole - pos.whole;
       sum.frac = neg.frac - pos.frac;
 
-    } else {
+    }
+    else {
       sum.whole = neg.whole - pos.whole - 1;
       sum.frac = 0xFFFFFFFFFFFFFFFF - pos.frac;
-      sum.frac = sum.frac + neg.frac;
+      sum.frac += (neg.frac + 1);
     }
-  
+  }
+  else{
+    if(pos.frac >= neg.frac){
+      sum.whole = pos.whole - neg.whole;
+      sum.frac = pos.frac - neg.frac;
+    }
+    else{
+      sum.whole = pos.whole - neg.whole;
+      sum.frac = neg.frac - pos.frac;
+      sum.is_negative = 1;
+    }
   }
   return sum;
 }
@@ -163,22 +176,28 @@ Fixedpoint add_diff_sign(Fixedpoint pos, Fixedpoint neg) {
 Fixedpoint add_same_sign(Fixedpoint left, Fixedpoint right) {
   // Note: If both + or both -, have to check overflow
   Fixedpoint sum = fixedpoint_create(0);
-
+  sum.is_negative = left.is_negative;
   uint64_t whole = (left.whole + right.whole);
+
+  if (left.whole > whole || right.whole > whole) {// This means overflow occurred
+    sum.is_overflow = 1;
+    return sum;
+  }
+
   sum.frac = (left.frac + right.frac);
 
-  if (left.frac > sum.frac && right.frac > sum.frac) {// This means overflow occurred in frac so add 1 to whole
-    whole = whole + 1;
-    if (whole > (whole + 1)) {
+  if (left.frac > sum.frac || right.frac > sum.frac) {// This means overflow occurred in frac so add 1 to whole
+    if (whole == 0xffffffffffffffffLU) {
       sum.is_overflow = 1;
       return sum;
     }
+    else{
+      whole = whole + 1;
+    }
   }
-  sum.whole = whole;
 
-  if (left.whole > sum.whole && right.whole > sum.whole) {// This means overflow occurred
-    sum.is_overflow = 1;
-  }
+  sum.whole = whole;
+  
   
   return sum;
 }
@@ -189,13 +208,12 @@ Fixedpoint fixedpoint_add(Fixedpoint left, Fixedpoint right) {
 
   if (left.is_negative == 0 && right.is_negative == 1) {
     sum = add_diff_sign(left, right);
-  } else if (left.is_negative == 1 && right.is_negative == 0) {
+  } 
+  else if (left.is_negative == 1 && right.is_negative == 0) {
     sum = add_diff_sign(right, left);
-  } else if (left.is_negative == 0 && right.is_negative == 0) {
+  } 
+  else {
     sum = add_same_sign(left, right);
-  } else {
-    sum = add_same_sign(left, right);
-    sum.is_negative = 1;
   }
 
   return sum;
@@ -224,7 +242,7 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
 
   Fixedpoint half = fixedpoint_create(0);
   half.is_negative = val.is_negative;
-  
+
   if (val.frac % 2 != 0) { // Causes underflow
     val.is_underflow = 1;
     return val;

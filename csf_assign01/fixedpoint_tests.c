@@ -321,12 +321,21 @@ void test_create_from_hex2(TestObjs *objs) {
   ASSERT(2192514215435042816 == fixedpoint_frac_part(val1));
 
   // Test negative
-  Fixedpoint val2 = fixedpoint_create_from_hex("-d09079A56770900.0001e6d60100");
+  Fixedpoint val2 = fixedpoint_create_from_hex("-000d09079A567709.0001e6d601");
   ASSERT(!fixedpoint_is_err(val2));
   ASSERT(fixedpoint_is_valid(val2));
   ASSERT(fixedpoint_is_neg(val2));
-  ASSERT(0xd09079A56770900UL == fixedpoint_whole_part(val2));
+  ASSERT(0xd09079A567709UL == fixedpoint_whole_part(val2));
   ASSERT(0x0001e6d601000000UL == fixedpoint_frac_part(val2));
+
+
+  Fixedpoint max = fixedpoint_create_from_hex("FFFFFFFFFFFFFFFF.FFFFFFFFFFFFFFFF");
+  ASSERT(!fixedpoint_is_err(max));
+  ASSERT(fixedpoint_is_valid(max));
+  ASSERT(!fixedpoint_is_neg(max));
+  ASSERT(0xFFFFFFFFFFFFFFFFUL == fixedpoint_whole_part(max));
+  ASSERT(0xFFFFFFFFFFFFFFFFUL == fixedpoint_frac_part(max));
+
 
   // Test starts with 0
   Fixedpoint val3 = fixedpoint_create_from_hex("0.1e6d601");
@@ -335,25 +344,32 @@ void test_create_from_hex2(TestObjs *objs) {
   ASSERT(!fixedpoint_is_neg(val3));
   ASSERT(0 == fixedpoint_whole_part(val3));
   ASSERT(2192514215435042816 == fixedpoint_frac_part(val3));
+
+  Fixedpoint zero = fixedpoint_create_from_hex("-000.0000");
+  ASSERT(!fixedpoint_is_neg(zero));
+  ASSERT(0 == fixedpoint_whole_part(zero));
+  ASSERT(0 == fixedpoint_frac_part(zero));
 }
 
 void test_is_err2(TestObjs *objs) {
   (void) objs;
   // Starts with "."
-  Fixedpoint err1 = fixedpoint_create_from_hex(".6666666666666666");
-  ASSERT(fixedpoint_is_err(err1));
-
-  // Has @
-  Fixedpoint err2 = fixedpoint_create_from_hex("@.0");
-  ASSERT(fixedpoint_is_err(err2));
-
-  // Has G
-  Fixedpoint err3 = fixedpoint_create_from_hex("G.0");
-  ASSERT(fixedpoint_is_err(err3));
+  Fixedpoint valid1 = fixedpoint_create_from_hex(".6666666666666666");
+  ASSERT(!fixedpoint_is_err(valid1));
 
   // "-" and starts with "."
-  Fixedpoint err4 = fixedpoint_create_from_hex("-.6666666666666666");
-  ASSERT(fixedpoint_is_err(err4));
+  Fixedpoint valid2 = fixedpoint_create_from_hex("-.6666666666666666");
+  ASSERT(!fixedpoint_is_err(valid2));
+
+  // Has @
+  Fixedpoint err1 = fixedpoint_create_from_hex("@.0");
+  ASSERT(fixedpoint_is_err(err1));
+
+  // Has G
+  Fixedpoint err2 = fixedpoint_create_from_hex("G.0");
+  ASSERT(fixedpoint_is_err(err2));
+
+  
 }
 
 
@@ -473,7 +489,7 @@ void test_is_valid(TestObjs *objs) {
 
 
   // is_err
-  Fixedpoint err = fixedpoint_create_from_hex(".6666666666666666");
+  Fixedpoint err = fixedpoint_create_from_hex(".66666.66666666666");
   ASSERT(fixedpoint_is_err(err));
   ASSERT(!fixedpoint_is_valid(err));
 }
