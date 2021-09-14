@@ -321,12 +321,12 @@ void test_create_from_hex2(TestObjs *objs) {
   ASSERT(2192514215435042816 == fixedpoint_frac_part(val1));
 
   // Test negative
-  Fixedpoint val2 = fixedpoint_create_from_hex("-d09079.1e6d601");
+  Fixedpoint val2 = fixedpoint_create_from_hex("-d09079A56770900.0001e6d60100");
   ASSERT(!fixedpoint_is_err(val2));
   ASSERT(fixedpoint_is_valid(val2));
   ASSERT(fixedpoint_is_neg(val2));
-  ASSERT(0xd09079 == fixedpoint_whole_part(val2));
-  ASSERT(2192514215435042816 == fixedpoint_frac_part(val2));
+  ASSERT(0xd09079A56770900UL == fixedpoint_whole_part(val2));
+  ASSERT(0x0001e6d601000000UL == fixedpoint_frac_part(val2));
 
   // Test starts with 0
   Fixedpoint val3 = fixedpoint_create_from_hex("0.1e6d601");

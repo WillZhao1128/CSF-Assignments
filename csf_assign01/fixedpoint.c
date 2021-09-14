@@ -49,12 +49,11 @@ Fixedpoint fixedpoint_create_from_hex(const char *hex) {
     new_fp.is_negative = 1;
     index++;
   } 
+
   if( !(isdigit(hex[index])) && (!(96 < hex[index] && hex[index] < 103)) && (!(64 < hex[index] && hex[index] < 71)) ){
     new_fp.is_err = 1;
-    printf("hello");
     return new_fp;
   }
-  
   
   int whole_len_counter = 1;
   int frac_len_counter = 0;
@@ -224,6 +223,8 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
   // TODO: implement
 
   Fixedpoint half = fixedpoint_create(0);
+  half.is_negative = val.is_negative;
+  
   if (val.frac % 2 != 0) { // Causes underflow
     val.is_underflow = 1;
     return val;
@@ -237,6 +238,7 @@ Fixedpoint fixedpoint_halve(Fixedpoint val) {
   }
   
   half.frac = val.frac / 2 + whole_frac;
+
   return half;
 }
 
@@ -321,8 +323,8 @@ int fixedpoint_is_valid(Fixedpoint val) {
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
   // TODO: implement
-  char *s = malloc(34);
-  char reverse[34];
+  char *s = malloc(35);
+  char reverse[35];
   int index = 0;
   uint64_t whole = val.whole;
   uint64_t frac = val.frac;
@@ -375,6 +377,11 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     }
 
     whole /= 16;
+    index++;
+  }
+
+  if(val.is_negative){
+    reverse[index] = '-';
     index++;
   }
 
