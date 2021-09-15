@@ -1,3 +1,11 @@
+/*
+ * Fixedpoint Numeric Data Type and Arithmetic: Testing
+ * CSF Assignment 1
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "fixedpoint.h"
