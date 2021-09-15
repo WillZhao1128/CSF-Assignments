@@ -5,7 +5,6 @@
  * aaug1@jhu.edu, wzhao33@jhu.edu
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "fixedpoint.h"
