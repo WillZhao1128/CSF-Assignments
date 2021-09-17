@@ -12,13 +12,12 @@ int read_line(FILE *in, char *buf) {
 			c = fgetc(in);
 			count++;
 	}
-	if (c == '\n') {
-			buf[count] = '\n';
-	}
+	buf[count] = '\0';
 	if (c == EOF) {
-			return -1;
+			return 0;
 	}
-	return count;
+	
+	return 1;
 }
 
 
@@ -32,15 +31,21 @@ unsigned count_occurrences(const char *line, const char *str) {
 	int line_len = find_string_length(line);
 	int search_word_len = find_string_length(str);
 
-	for (int i = 0; i < line_len; i++) {
+	if (line_len < search_word_len) {
+		return 0;
+	}
+
+	for (int i = 0; i < line_len - search_word_len; i++) {
 		matches = 0;
 		for (int j = 0; j < search_word_len; j++) {
 			if (line[i+j] == str[j]) {
-				matches++;			
+				
+				matches++;
 			}
 		}
 		if (matches == search_word_len) {
 			occurrences++;
+			
 		}
 	}
 	return occurrences;
@@ -49,10 +54,11 @@ unsigned find_string_length(const char *s) {
 	int tot_len = 0;
 	char c = *s;
 
-	while(c != '\n' && c != '\0') {
+	while(c != '\0') {
 		c = *(s+tot_len);
 		tot_len++;
 	}
+
 	return tot_len - 1;
 }
 

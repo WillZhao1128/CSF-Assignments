@@ -11,18 +11,19 @@ int main(int argc, char **argv) {
     return 1;
   }
   
-  int flag = 0;
-  char* buff;
+  int flag = 1;
   int tot_occurrences;
+  char buff[512] = {0};
 
-  while (flag != -1) {
-    buff = malloc(sizeof(char) * 512);
+  while (flag) {
+    char* buff = malloc(sizeof(char) * 512);
     flag = read_line(fileptr, buff);
     tot_occurrences += count_occurrences(buff, argv[1]);
+    //printf("%s", buff);
   }
 
   printf("%d", tot_occurrences);
-  free(buff);
+  
 
   fclose(fileptr);
   return 0;

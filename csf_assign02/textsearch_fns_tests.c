@@ -15,7 +15,7 @@ void cleanup(TestObjs *objs);
 // TODO: declare test functions
 
 // Example:
-// void test_read_line(TestObjs *objs);
+void test_read_line(TestObjs *objs);
 
 
 int main(int argc, char **argv) {
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   TEST_INIT();
 
   // TODO: invoke test functions
-  // TEST(test_read_line);
+  TEST(test_read_line);
 
   TEST_FINI();
 
@@ -57,7 +57,7 @@ void cleanup(TestObjs *objs) {
 }
 
 // An example test function
-/*
+
 void test_read_line(TestObjs *objs) {
   // the fmemopen function allows us to treat a character string
   // as an input file
@@ -93,6 +93,6 @@ void test_read_line(TestObjs *objs) {
 
   fclose(in);
 }
-*/
+
 
 // TODO: implementations of other test functions
