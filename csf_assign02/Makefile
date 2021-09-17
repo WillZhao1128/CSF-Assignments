@@ -3,10 +3,10 @@ CC = gcc
 # Note: we use -std=gnu11 rather than -std=c11 in order to use the
 # sigjmp_buf data type
 CFLAGS = -no-pie -g -Wall -Wextra -pedantic -std=gnu11
-ASMFLAGS = -no-pie
+ASMFLAGS = -no-pie -g
 LDFLAGS = -no-pie
 
-EXES = 
+EXES = c_textsearch asm_textsearch c_textsearch_fns_tests asm_textsearch_fns_tests
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $*.c -o $*.o
