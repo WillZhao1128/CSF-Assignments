@@ -5,25 +5,27 @@
 
 int main(int argc, char **argv) {
   // TODO: implement
-  FILE* fileptr = fopen(argv[2], "r");
+  int file_ind = handle_arguments(argc);
+
+  FILE* fileptr = fopen(argv[file_ind], "r");
   if (fileptr == NULL) {
     fprintf(stderr, "Could not open file");
-    return 1;
+    exit(2);
   }
   
-  int flag = 1;
-  int tot_occurrences;
-  char buff[512] = {0};
+  int tot_occurrences = calc_total_occurences(fileptr, argv[file_ind - 1], argc);
 
-  while (flag) {
-    char* buff = malloc(sizeof(char) * 512);
-    flag = read_line(fileptr, buff);
-    tot_occurrences += count_occurrences(buff, argv[1]);
-    //printf("%s", buff);
+  if (argc == 4) {
+    char* c_flag = "-c";
+    if (strings_equal(argv[1], c_flag)) {
+      fprintf(stdout, "%d occurrence(s)", tot_occurrences);
+      exit(0);
+    } else {
+      printf("argv[1]: %s\n", argv[1]);
+      fprintf(stderr, "Invalid input");
+      exit(1);
+    }
   }
-
-  printf("%d", tot_occurrences);
-  
 
   fclose(fileptr);
   return 0;
