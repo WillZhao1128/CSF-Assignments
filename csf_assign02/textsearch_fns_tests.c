@@ -16,6 +16,7 @@ void cleanup(TestObjs *objs);
 
 // Example:
 void test_read_line(TestObjs *objs);
+void test_count_occurrences(TestObjs *objs);
 
 
 int main(int argc, char **argv) {
@@ -29,7 +30,7 @@ int main(int argc, char **argv) {
 
   // TODO: invoke test functions
   TEST(test_read_line);
-
+  TEST(test_count_occurrences);
   TEST_FINI();
 
   return 0;
@@ -96,3 +97,16 @@ void test_read_line(TestObjs *objs) {
 
 
 // TODO: implementations of other test functions
+
+void test_count_occurrences(TestObjs *objs) {
+  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+
+  char* buf = malloc(sizeof(char) * 512);
+  read_line(in, buf);
+  //print_line(stdout,buf);
+  //ASSERT(find_string_length(buf) == 2);
+
+  free(buf);
+  fclose(in);
+
+}

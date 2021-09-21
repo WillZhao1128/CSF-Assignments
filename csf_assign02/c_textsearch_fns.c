@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include "textsearch_fns.h"
+#include <stdlib.h>
 
 // TODO: implement functions declared in textsearch_fns.h
 int read_line(FILE *in, char *buf) {
@@ -37,7 +38,7 @@ void print_line(FILE *out, const char *buf) {
 }
 
 unsigned count_occurrences(const char *line, const char *str) {
-	int occurrences = 0;
+	unsigned occurrences = 0;
 	int line_len = find_string_length(line);
 	int search_word_len = find_string_length(str);
 
@@ -47,7 +48,7 @@ unsigned count_occurrences(const char *line, const char *str) {
 	}
 
 	// Iterate over the entire line
-	for (int i = 0; i < line_len - search_word_len; i++) {
+	for (int i = 0; i < line_len - search_word_len + 1; i++) {
 		occurrences += strings_equal(line + i, str);
 	}
 
@@ -106,14 +107,15 @@ int calc_total_occurences(FILE* fileptr, char* search, int argc) {
   int tot_occurrences;
   int num_occurrences;
   while (flag) {
-    char* buff = malloc(sizeof(char) * 512);
-    flag = read_line(fileptr, buff);
-    num_occurrences = count_occurrences(buff, search);
+    char* buf = malloc(sizeof(char) * 512);
+    flag = read_line(fileptr, buf);
+    num_occurrences = count_occurrences(buf, search);
     tot_occurrences += num_occurrences;
     if (argc == 3 && num_occurrences > 0) {
-      fprintf(stdout, buff);
+      fprintf(stdout, buf);
       fprintf(stdout, "\n");
     }
+	free(buf);
   }
 
   return tot_occurrences;

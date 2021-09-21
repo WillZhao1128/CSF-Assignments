@@ -344,19 +344,23 @@ int fixedpoint_is_valid(Fixedpoint val) {
 
 char *fixedpoint_format_as_hex(Fixedpoint val) {
   char *s = malloc(35);
+  //create an array to store the reverse of hex
   char reverse[35];
   int index = 0;
   uint64_t whole = val.whole;
   uint64_t frac = val.frac;
 
+  //check existence of fractional part
   if (frac != 0){
     int count = 0;
 
+    //get rid of buffers and track length
     while(frac % 16 == 0){
       frac /= 16;
       count++;
     }
 
+    //repeatedly divide and mod by 16 to converto hex (in reverse order)
     while (frac != 0){
       int digit = frac % 16;
       if (digit < 10){
@@ -371,6 +375,7 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
 
     }
 
+    //add leading 0 based on length of buffer
     for(int i = 16; i > count; i--){
       reverse[index] = '0';
       index++;
@@ -380,11 +385,13 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     index++;
   }
 
+  //special case whole = 0
   if (whole == 0){
     reverse[index] = '0';
     index++;
   }
 
+  //repeatedly divide and mod by 16 to converto hex (in reverse order)
   while (whole != 0){
     int digit = whole % 16;
     if (digit < 10){
@@ -396,15 +403,18 @@ char *fixedpoint_format_as_hex(Fixedpoint val) {
     index++;
   }
 
+  //add sign
   if (val.is_negative){
     reverse[index] = '-';
     index++;
   }
 
+  //reverse the reverse hex to get the result
   for (int i = 0; i < index; i++){
     s[i] = reverse[index - i - 1];
   }
 
+  //add null terminator
   s[index] = '\0';
   return s;
 }
