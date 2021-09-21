@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // these functions may be used in the test program
-#include "textsearch_fns.h"
 #include "tctest.h"
+#include "textsearch_fns.h"
 
 typedef struct {
   const char *pandp;
@@ -103,8 +103,16 @@ void test_count_occurrences(TestObjs *objs) {
 
   char* buf = malloc(sizeof(char) * 512);
   read_line(in, buf);
-  //print_line(stdout,buf);
-  //ASSERT(find_string_length(buf) == 2);
+  ASSERT(count_occurrences(buf, "a") == 6);
+  ASSERT(count_occurrences(buf, "It") == 1);
+  ASSERT(count_occurrences(buf, " in") == 1);
+  ASSERT(count_occurrences(buf, " inas") == 0);
+
+  read_line(in, buf);
+  ASSERT(count_occurrences(buf, "pos") == 1);
+  ASSERT(count_occurrences(buf, "wife.") == 1);
+  ASSERT(count_occurrences(buf, " ") == 11);
+  ASSERT(count_occurrences(buf, "  ") == 0);
 
   free(buf);
   fclose(in);

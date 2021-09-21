@@ -77,6 +77,6 @@ int strings_equal(const char *s1, const char *s2);
  */
 int handle_arguments(int argc);
 
-int calc_total_occurences(FILE* fileptr, char* search, int argc);
+int calc_total_occurrences(FILE* fileptr, char* search, int argc);
 
 #endif // TEXTSEARCH_FNS_H

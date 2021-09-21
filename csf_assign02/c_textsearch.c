@@ -13,13 +13,13 @@ int main(int argc, char **argv) {
     exit(2);
   }
   
-  int tot_occurrences = calc_total_occurences(fileptr, argv[file_ind - 1], argc);
+  int tot_occurrences = calc_total_occurrences(fileptr, argv[file_ind - 1], argc);
 
   if (argc == 4) {
     char* c_flag = "-c";
     if (strings_equal(argv[1], c_flag)) {
       fprintf(stdout, "%d occurrence(s)\n", tot_occurrences);
-      exit(0);
+      return 0;
     } else {
       printf("argv[1]: %s\n", argv[1]);
       fprintf(stderr, "Invalid input\n");

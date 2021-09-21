@@ -57,14 +57,14 @@ unsigned count_occurrences(const char *line, const char *str) {
 
 
 unsigned find_string_length(const char *s) {
-	int tot_len = 0;
+	unsigned tot_len = 0;
 	char c = *s;
 
 	while(c != '\0') {
 		c = *(s+tot_len);
 		tot_len++;
 	}
-
+	
 	return tot_len - 1;
 }
 
@@ -82,6 +82,7 @@ int strings_equal(const char *s1, const char *s2) {
 
 	// If we got the same number of matched characters
 	if (matches == search_word_len) {
+		//printf("%s\n",s1);
 		return 1;
 	}
 	
@@ -102,10 +103,10 @@ int handle_arguments(int argc) {
 
 }
 
-int calc_total_occurences(FILE* fileptr, char* search, int argc) {
+int calc_total_occurrences(FILE* fileptr, char* search, int argc) {
   int flag = 1;
-  int tot_occurrences;
-  int num_occurrences;
+  int tot_occurrences = 0;
+  int num_occurrences = 0;
   while (flag) {
     char* buf = malloc(sizeof(char) * 512);
     flag = read_line(fileptr, buf);
