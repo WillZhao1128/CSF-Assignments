@@ -34,7 +34,10 @@ int read_line(FILE *in, char *buf) {
 }
 
 void print_line(FILE *out, const char *buf) {
-	fprintf(out, buf);
+	int length = find_string_length(buf);
+	for(int i = 0; i < length; i++){
+		fputc(buf[i], out);
+	}
 }
 
 unsigned count_occurrences(const char *line, const char *str) {
@@ -63,6 +66,10 @@ unsigned find_string_length(const char *s) {
 	while(c != '\0') {
 		c = *(s+tot_len);
 		tot_len++;
+	}
+
+	if(tot_len == 0){
+		return tot_len;
 	}
 	
 	return tot_len - 1;

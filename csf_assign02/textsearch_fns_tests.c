@@ -16,7 +16,12 @@ void cleanup(TestObjs *objs);
 
 // Example:
 void test_read_line(TestObjs *objs);
+void test_print_line();
 void test_count_occurrences(TestObjs *objs);
+void test_find_string_length(TestObjs *objs);
+void test_strings_equal(TestObjs *objs);
+void test_handle_arguments();
+void test_calc_total_occurrences(TestObjs *objs);
 
 
 int main(int argc, char **argv) {
@@ -30,7 +35,12 @@ int main(int argc, char **argv) {
 
   // TODO: invoke test functions
   TEST(test_read_line);
+  TEST(test_print_line);
   TEST(test_count_occurrences);
+  TEST(test_find_string_length);
+  TEST(test_strings_equal);
+  TEST(test_handle_arguments);
+  TEST(test_calc_total_occurrences);
   TEST_FINI();
 
   return 0;
@@ -97,6 +107,48 @@ void test_read_line(TestObjs *objs) {
 
 
 // TODO: implementations of other test functions
+void test_print_line() {
+  char buf1[512];
+  FILE *out = fmemopen(buf1, sizeof(buf1), "w");
+  print_line(out, "qweqwassdd");
+  fclose(out);
+
+  out = fmemopen(buf1, sizeof(buf1), "r");
+  ASSERT(0 == strcmp(buf1, "qweqwassdd"));
+  fclose(out);
+
+
+  char buf2[512];
+  out = fmemopen(buf2, sizeof(buf2), "w");
+  print_line(out, " ");
+  fclose(out);
+
+  out = fmemopen(buf2, sizeof(buf2), "r");
+  ASSERT(0 == strcmp(buf2, " "));
+  fclose(out);
+
+  char buf3[512];
+  out = fmemopen(buf3, sizeof(buf3), "w");
+  print_line(out, " asd qwe  aaa \n as");
+  fclose(out);
+
+  out = fmemopen(buf3, sizeof(buf3), "r");
+  ASSERT(0 == strcmp(buf3, " asd qwe  aaa \n as"));
+  fclose(out);
+
+  char buf4[512];
+  out = fmemopen(buf4, sizeof(buf4), "w");
+  print_line(out, "             \n\n\n aaaaas a");
+  fclose(out);
+
+  out = fmemopen(buf4, sizeof(buf4), "r");
+  ASSERT(0 == strcmp(buf4, "             \n\n\n aaaaas a"));
+  fclose(out);
+  
+
+}
+
+
 
 void test_count_occurrences(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
@@ -114,7 +166,104 @@ void test_count_occurrences(TestObjs *objs) {
   ASSERT(count_occurrences(buf, " ") == 11);
   ASSERT(count_occurrences(buf, "  ") == 0);
 
+  read_line(in, buf);
+  ASSERT(count_occurrences(buf, "pos") == 0);
+  ASSERT(count_occurrences(buf, "wife.") == 0);
+  ASSERT(count_occurrences(buf, "sqwasd") == 0);
+  ASSERT(count_occurrences(buf, "  a") == 0);
+
   free(buf);
   fclose(in);
 
+}
+
+void test_find_string_length(TestObjs *objs) {
+  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+
+  char* buf = malloc(sizeof(char) * 512);
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+  
+  
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+
+  read_line(in, buf);
+  ASSERT(find_string_length(buf) == strlen(buf));
+  
+  ASSERT(find_string_length("") == strlen(""));
+  ASSERT(find_string_length("absa") == strlen("aasd"));
+  ASSERT(find_string_length("22a a ") == strlen("22 b b"));
+  ASSERT(find_string_length("     ") == strlen("12333"));
+
+  free(buf);
+  fclose(in);
+
+}
+
+void test_strings_equal(TestObjs *objs) {
+  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+
+  char* buf = malloc(sizeof(char) * 512);
+  read_line(in, buf);
+  ASSERT(strings_equal(buf, "It is a truth universally acknowledged, that a single man in") == 1);
+  ASSERT(strings_equal(buf, "It is ") == 1);
+  ASSERT(strings_equal(buf, "I") == 1);
+  ASSERT(strings_equal(buf, "t is ") == 0);
+  ASSERT(strings_equal(buf, "a") == 0);
+
+  read_line(in, buf);
+  ASSERT(strings_equal(buf, "possession of a good fortune, must be in want of a wife.") == 1);
+  ASSERT(strings_equal(buf, "po") == 1);
+  ASSERT(strings_equal(buf, "possession of a ") == 1);
+  ASSERT(strings_equal(buf, "ossession of a good fortune, must be in want of a wife.") == 0);
+  ASSERT(strings_equal(buf, ".") == 0);
+  ASSERT(strings_equal(buf, "") == 1);
+
+  read_line(in, buf);
+  ASSERT(strings_equal(buf, "") == 1);
+  ASSERT(strings_equal(buf, "  ") == 0);
+  ASSERT(strings_equal(buf, "as") == 0);
+  ASSERT(strings_equal(buf, ".") == 0);
+  ASSERT(strings_equal(buf, " ") == 0);
+
+  free(buf);
+  fclose(in);
+}
+
+void test_handle_arguments(){
+  ASSERT(handle_arguments(3) == 2);
+  ASSERT(handle_arguments(4) == 3);
+}
+
+
+void test_calc_total_occurrences(TestObjs *objs){
+  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+  ASSERT(calc_total_occurrences(in, "a", 4) == 17);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "considered", 4) == 1);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "universally acknowledged, t", 4) == 1);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "ed", 4) == 4);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "considered a", 4) == 1);
+  
+  fclose(in);
 }
