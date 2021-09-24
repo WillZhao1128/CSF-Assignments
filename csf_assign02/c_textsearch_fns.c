@@ -61,18 +61,13 @@ unsigned count_occurrences(const char *line, const char *str) {
 
 unsigned find_string_length(const char *s) {
 	unsigned tot_len = 0;
-	char c = *s;
 
-	while(c != '\0') {
-		c = *(s+tot_len);
+	while(*s != '\0') {
+		s++;
 		tot_len++;
 	}
-
-	if(tot_len == 0){
-		return tot_len;
-	}
 	
-	return tot_len - 1;
+	return tot_len;
 }
 
 
