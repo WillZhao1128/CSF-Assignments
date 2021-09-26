@@ -46,7 +46,7 @@ unsigned count_occurrences(const char *line, const char *str);
  * Determines the length of the string pointed to by s
  *
  * Parameters:
- *   s - pointer to a C character string
+ *   s - pointer to a C string
  *
  * Returns:
  *   length of the string s
