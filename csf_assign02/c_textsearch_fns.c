@@ -33,6 +33,7 @@ int read_line(FILE *in, char *buf) {
 	return 1;
 }
 
+
 void print_line(FILE *out, const char *buf) {
 	int length = find_string_length(buf);
 	for(int i = 0; i < length; i++){

@@ -6,50 +6,60 @@
 .section .data
 maxline: .long 511
 
+.section .bss
+length: .space 4
+
 .section .text
-buf: .space 511
+    .globl read_line
+    .globl print_line
+    .globl find_string_length
 
 /*
  * The following is just an example of how an assembly language
  * function would be defined
  */
-	.globl read_line
+	
 read_line:
-	/* TODO: implementation of read_line function */
-	/*%rdi has file pointer, and %rsi has buffer pointer*/
-    subq $8, %rsp /* Align the stack pointer*/
-    push %r13
+	/* %rdi has file pointer, and %rsi has buffer pointer */
+    subq $8, %rsp       /* Align the stack pointer*/
+    push %r13           /* Save callee-saved register values*/
     push %r14
     push %r15
 
-    movq $0, %r15 /* count = 0*/
-    movq %rsi, %r13 /* let r13 store address of buf*/
-    movq %rdi, %r14 /* %r14 has file pointer*/
-    movq $0, %rax /*initialize return register to 0*/
-    /*leaq (%rdi, %r12, 1), %r13 r13 stores address of next character in file*/
+    movw $0, %r15w      /* count = 0; w b/c max val is 512, which is 9 bits*/
+    movq %rsi, %r13     /* let r13 store address of buf*/
+    movq %rdi, %r14     /* %r14 has file pointer*/
+    movb $0, %al        /* initialize return register to 0*/
     call fgetc
-    /*%rsi now holds the entire file string*/
     
 	
 .Lcheck_end_of_line:
     cmpb $10, %al /* c != '\n'*/
-    je .Lloop_end
+    je .Lset_return_1
 
 .Lcheck_EOF:
     cmpb $-1, %al /* c != EOF */
-    je .Lloop_end
+    je .Lset_return_0
 
 .Lcheck_MAXLINE:
-    cmpq maxline, %r15 /*c < MAXLINE; if count = 512 and this character is a newline, */
-    jg .Lloop_end
+    cmpw maxline, %r15w /*c < MAXLINE; if count = 512 and this character is a newline, */
+    jg .Lset_return_1
     
     movq %rax, (%r13, %r15, 1)
     movq %r14, %rdi /* %r14 has file pointer*/
-    movq $0, %rax /*initialize return register to 0*/
+    movb $0, %al /*initialize return register to 0*/
     call fgetc
     
     incq %r15 /* count++ */
     jmp .Lcheck_end_of_line
+
+.Lset_return_0:
+    movq $0, %rax
+    jmp .Lloop_end
+
+.Lset_return_1:
+    movq $1, %rax
+    jmp .Lloop_end
 
 .Lloop_end:
     movq $0, (%r13, %r15, 1) /* move the null term. character into address of r14 */
@@ -59,6 +69,32 @@ read_line:
     addq $8, %rsp
     ret
 
+/* -------------------------------------------------------------------------- */
+
+print_line:
+    subq $8, %rsp       /* Align the stack pointer*/
+    push %r14           /* Save callee-saved register values*/
+    push %r15
+    movq $0, %r15       /* count = 0 */
+    call find_string_length
+    movq %rax, length
+
+.Lloop_top_print_line:
+    cmp length, %r15
+    jg .Lloop_end_print_line
+
+    
+    call fputc
+
+
+.Lloop_end_print_line:
+    pop %r15
+    pop %r14
+    addq $8, %rsp
+    ret
+
+
+/* -------------------------------------------------------------------------- */
 	.globl find_string_length
 find_string_length: /* Assume %rdi is base address */
 	subq $8, %rsp
