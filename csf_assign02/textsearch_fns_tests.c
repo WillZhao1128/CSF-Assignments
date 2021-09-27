@@ -278,12 +278,12 @@ void test_find_string_length(TestObjs *objs) {
 
   char* buf = malloc(sizeof(char) * 512);
 
-  //read_line(in, buf);
+  read_line(in, buf);
   char hello[] = "hello\0";
 
   int hi = find_string_length(hello);
 
-  ASSERT(find_string_length(hello) == strlen("hello"));
+  ASSERT(find_string_length(buf) == strlen(buf));
 
 /*textsearch_f
   //read_line(in, buf);
