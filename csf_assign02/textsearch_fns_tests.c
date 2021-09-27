@@ -272,7 +272,7 @@ void test_calc_total_occurrences(TestObjs *objs){
 }
 */
 
-
+// TODO: MAKE THIS A COMPLEX TEST AND WRITE CORRECT UNIT TEST
 void test_find_string_length(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
 
@@ -285,11 +285,10 @@ void test_find_string_length(TestObjs *objs) {
 
   ASSERT(find_string_length(buf) == strlen(buf));
 
-/*textsearch_f
-  //read_line(in, buf);
+  read_line(in, buf);
   ASSERT(find_string_length(buf) == strlen(buf));
 
-  //read_line(in, buf);
+  read_line(in, buf);
   ASSERT(find_string_length(buf) == strlen(buf));
   
   
@@ -312,7 +311,6 @@ void test_find_string_length(TestObjs *objs) {
   ASSERT(find_string_length("22a a ") == strlen("22 b b"));
   ASSERT(find_string_length("     ") == strlen("12333"));
 
-*/
   free(buf);
   fclose(in);
 
