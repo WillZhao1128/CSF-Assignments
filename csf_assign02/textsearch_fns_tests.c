@@ -1,3 +1,11 @@
+/*
+ * Testing the helper functions written in c_textsearch_fns.c and asm_textsearch_fns.S
+ * CSF Assignment 2
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> // these functions may be used in the test program

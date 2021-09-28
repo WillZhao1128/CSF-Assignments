@@ -1,6 +1,8 @@
 /*
- * Assembly language implementation of the main function
- * for the asm_textsearch_fns program
+ * Assembly language implementation of the main function for the asm_textsearch_fns program
+ * CSF Assignment 2
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
  */
 
 .section .text

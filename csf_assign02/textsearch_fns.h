@@ -1,3 +1,11 @@
+/*
+ * Declaration of helper functions used for c_textsearch.c asm_textsearch.S
+ * CSF Assignment 2
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
+
 #ifndef TEXTSEARCH_FNS_H
 #define TEXTSEARCH_FNS_H
 

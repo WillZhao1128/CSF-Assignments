@@ -1,6 +1,8 @@
 /*
- * Assembly language implementations of functions declared in
- * textsearch_fns.h
+ * Assembly language implementations of functions declared in textsearch_fns.h
+ * CSF Assignment 2
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
  */
  
 .section .data
