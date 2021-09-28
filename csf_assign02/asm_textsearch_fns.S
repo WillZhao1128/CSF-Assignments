@@ -10,9 +10,7 @@ maxline: .long 511
 
 .section .bss
 length: .space 4
-character: .space 1
 matches: .space 8
-return: .space 1
 
 .section .text
     .globl read_line
@@ -115,7 +113,7 @@ print_line:
     addq $8, %rsp
     ret
 /* -------------------------------------------------------------------------- */
-/*TODO*/
+
 count_occurrences:
     subq $8, %rsp        /* Align the stack pointer*/
     push %r13            /* Save callee-saved register values*/
@@ -154,7 +152,6 @@ count_occurrences:
     pop %r13
     addq $8, %rsp
     ret
-
 
 /* -------------------------------------------------------------------------- */
 find_string_length:                 /* %rdi is base address */
