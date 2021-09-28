@@ -18,8 +18,9 @@ return: .space 1
     .globl read_line
     .globl print_line
     .globl find_string_length
-    .globl count_occurrences
     .globl strings_equal
+    .globl count_occurrences
+    
 
 /*
  * The following is just an example of how an assembly language
@@ -115,8 +116,41 @@ count_occurrences:
     push %r13            /* Save callee-saved register values*/
     push %r14            
     push %r15
-    movq $0, %r13        /* Align the stack pointer*/
+    movq $0, %r13        /* %r13 will store the number of iterations */
+    movq %rdi, %r14      /* %r14 has pointer to the line*/
+    movq $0, %r15        /* count == 0*/
+    movq $0, matches     /* counting the occurrences */
+    
+    call find_string_length
+    movq %rax, %r13
+
+    movq %rsi, %rdi
+    call find_string_length
+    movq %rax, length  /* find the length of the word */
+
+    cmp length, %r13   /* if the line length is shorter than the word, end the loop */
+    jl .Lloop_count_occurrences_end
+
+    subq length, %r13  /* Calculate line_length - search_word length*/
+
+.Lloop_count_occurrences_top:
+    cmp %r13, %r15
+    jge .Lloop_count_occurrences_end
+    leaq (%r14, %r15, 1), %rdi
+    
+    call strings_equal
+    addq %rax, matches
+    jmp .Lloop_count_occurrences_top
+
+.Lloop_count_occurrences_end:
+    movq matches, %rax
+    pop %r15
+    pop %r14
+    pop %r13
+    addq $8, %rsp
     ret
+
+
 /* -------------------------------------------------------------------------- */
 	.globl find_string_length
 find_string_length: /* Assume %rdi is base address */

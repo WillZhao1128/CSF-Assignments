@@ -158,7 +158,6 @@ void test_print_line() {
 
 }
 
-/*
 
 void test_count_occurrences(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
@@ -186,7 +185,7 @@ void test_count_occurrences(TestObjs *objs) {
   fclose(in);
 
 }
-*/
+
 
 void test_find_string_length(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
