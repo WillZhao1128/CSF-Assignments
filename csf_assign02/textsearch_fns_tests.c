@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
   TEST(test_print_line);
   //TEST(test_count_occurrences);
   //TEST(test_find_string_length);
-  //TEST(test_strings_equal);
+  TEST(test_strings_equal);
   //TEST(test_handle_arguments);
   //TEST(test_calc_total_occurrences);
   
@@ -227,3 +227,56 @@ void test_find_string_length(TestObjs *objs) {
   fclose(in);
 
 }
+
+void test_strings_equal(TestObjs *objs) {
+  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+
+  char* buf = malloc(sizeof(char) * 512);
+  read_line(in, buf);
+  ASSERT(strings_equal(buf, "It is a truth universally acknowledged, that a single man in") == 1);
+  ASSERT(strings_equal(buf, "It is ") == 1);
+  ASSERT(strings_equal(buf, "I") == 1);
+  ASSERT(strings_equal(buf, "t is ") == 0);
+  ASSERT(strings_equal(buf, "a") == 0);
+
+  read_line(in, buf);
+  ASSERT(strings_equal(buf, "possession of a good fortune, must be in want of a wife.") == 1);
+  ASSERT(strings_equal(buf, "po") == 1);
+  ASSERT(strings_equal(buf, "possession of a ") == 1);
+  ASSERT(strings_equal(buf, "ossession of a good fortune, must be in want of a wife.") == 0);
+  ASSERT(strings_equal(buf, ".") == 0);
+  ASSERT(strings_equal(buf, "") == 1);
+
+  read_line(in, buf);
+  ASSERT(strings_equal(buf, "") == 1);
+  ASSERT(strings_equal(buf, "  ") == 0);
+  ASSERT(strings_equal(buf, "as") == 0);
+  ASSERT(strings_equal(buf, ".") == 0);
+  ASSERT(strings_equal(buf, " ") == 0);
+
+  free(buf);
+  fclose(in);
+}
+/*
+void test_handle_arguments(){
+  ASSERT(handle_arguments(3) == 2);
+  ASSERT(handle_arguments(4) == 3);
+}
+*/
+
+/*
+void test_calc_total_occurrences(TestObjs *objs){
+  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+  ASSERT(calc_total_occurrences(in, "a", 4) == 17);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "considered", 4) == 1);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "universally acknowledged, t", 4) == 1);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "ed", 4) == 4);
+  rewind(in);
+  ASSERT(calc_total_occurrences(in, "considered a", 4) == 1);
+  
+  fclose(in);
+}
+*/

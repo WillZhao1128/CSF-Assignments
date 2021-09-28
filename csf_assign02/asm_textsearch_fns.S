@@ -10,14 +10,16 @@ maxline: .long 511
 
 .section .bss
 length: .space 4
-char: .space 1
-occurrences: .space 8
+character: .space 1
+matches: .space 8
+return: .space 1
 
 .section .text
     .globl read_line
     .globl print_line
     .globl find_string_length
     .globl count_occurrences
+    .globl strings_equal
 
 /*
  * The following is just an example of how an assembly language
@@ -115,10 +117,6 @@ count_occurrences:
     push %r15
     movq $0, %r13        /* Align the stack pointer*/
     ret
-
-/* -------------------------------------------------------------------------- */
-
-
 /* -------------------------------------------------------------------------- */
 	.globl find_string_length
 find_string_length: /* Assume %rdi is base address */
@@ -138,4 +136,42 @@ find_string_length: /* Assume %rdi is base address */
 	addq $8, %rsp
 	ret
 
-	
+/* -------------------------------------------------------------------------- */
+
+strings_equal:
+    subq $8, %rsp        /* Align the stack pointer*/
+    push %r12
+    push %r13            /* Save callee-saved register values*/
+    push %r14            
+    push %r15
+    movq $0, matches         /* Save callee-saved register values*/
+    movq $0, return
+    movq $0, %r15            /* count = 0 */
+    movq %rdi, %r13          /* %r13 contains string 1*/
+    movq %rsi, %r14          /* %r14 contains string 2*/
+
+    movq %rsi, %rdi
+    call find_string_length /* find string length of string 2 */
+    movq %rax, length
+
+.Lloop_strings_equal_top:
+    cmp length, %r15
+    jge .Lloop_end
+    movq (%r13, %r15, 1), %r12
+    cmp (%r13, %r15, 1), %r12
+    je .L_chars_equal
+
+.L_chars_equal:
+    incq matches
+    jmp .Lloop_strings_equal_top
+
+.L_strings_equal:
+    movq $1, return
+
+.Lloop_end_strings_equal:
+    movq return, %rax
+    pop %r15
+    pop %r14
+    pop %r13
+    pop %r12
+    addq $8, %rsp
