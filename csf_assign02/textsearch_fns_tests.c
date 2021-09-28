@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   
   TEST(test_read_line);
   
-  //TEST(test_print_line);
+  TEST(test_print_line);
   //TEST(test_count_occurrences);
   //TEST(test_find_string_length);
   //TEST(test_strings_equal);

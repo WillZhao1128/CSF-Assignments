@@ -10,11 +10,14 @@ maxline: .long 511
 
 .section .bss
 length: .space 4
+char: .space 1
+occurrences: .space 8
 
 .section .text
     .globl read_line
     .globl print_line
     .globl find_string_length
+    .globl count_occurrences
 
 /*
  * The following is just an example of how an assembly language
@@ -32,7 +35,7 @@ read_line:
     movq %rsi, %r13     /* let r13 store address of buf*/
     movq %rdi, %r14     /* %r14 has file pointer*/
     movb $0, %al        /* initialize return register to 0*/
-    call fgetc
+    call fgetc          /* %rdi has the file pointer */
     
 	
 .Lcheck_end_of_line:
@@ -74,26 +77,46 @@ read_line:
 /* -------------------------------------------------------------------------- */
 
 print_line:
-    subq $8, %rsp       /* Align the stack pointer*/
-    push %r14           /* Save callee-saved register values*/
+    /* %rdi has file pointer, and %rsi has buffer pointer */
+    subq $8, %rsp        /* Align the stack pointer*/
+    push %r13            /* Save callee-saved register values*/
+    push %r14            
     push %r15
-    movq $0, %r15       /* count = 0 */
-    call find_string_length
-    movq %rax, length
+    movq $0, %r15        /* count = 0 */
+    movq %rsi, %r14      /* %r14 = buffer pointer */
+    movq %rdi, %r13      /* %r13 = file pointer */
+
+    movq %r14, %rdi      /* set arg1 equal to the buffer pointer */
+    call find_string_length  /* find the length of the buffer pointer */
+    movq %rax, length    /* store this value in variable length */
 
 .Lloop_top_print_line:
-    cmp length, %r15
-    jg .Lloop_end_print_line
-
-    
-    call fputc
-
+    cmp length, %r15   /* for count < length, e*/
+    jg .Lloop_end_print_line /* once count == lenght, end loop*/
+    mov (%r14,%r15,1), %rdi  /* get the character into arg1 of fputc */
+    mov %r13, %rsi
+    call fputc               /* %rdi is arg1 = character, %rsi pointer to write  */
+    incq %r15
+    jmp .Lloop_top_print_line
 
 .Lloop_end_print_line:
     pop %r15
     pop %r14
+    pop %r13
+    
     addq $8, %rsp
     ret
+/* -------------------------------------------------------------------------- */
+/*TODO*/
+count_occurrences:
+    subq $8, %rsp        /* Align the stack pointer*/
+    push %r13            /* Save callee-saved register values*/
+    push %r14            
+    push %r15
+    movq $0, %r13        /* Align the stack pointer*/
+    ret
+
+/* -------------------------------------------------------------------------- */
 
 
 /* -------------------------------------------------------------------------- */
