@@ -43,12 +43,12 @@ int main(int argc, char **argv) {
 
   // TODO: invoke test functions
   
-  //TEST(test_read_line);
+  TEST(test_read_line);
   
-  //TEST(test_print_line);
-  //TEST(test_count_occurrences);
+  TEST(test_print_line);
+  TEST(test_count_occurrences);
   TEST(test_find_string_length);
-  //TEST(test_strings_equal);
+  TEST(test_strings_equal);
   //TEST(test_handle_arguments);
   //TEST(test_calc_total_occurrences);
   
@@ -206,7 +206,7 @@ void test_strings_equal(TestObjs *objs) {
 
   char* buf = malloc(sizeof(char) * 512);
   read_line(in, buf);
-  //ASSERT(strings_equal(buf, "It is a truth universally acknowledged, that a single man in") == 1);
+  ASSERT(strings_equal(buf, "It is a truth universally acknowledged, that a single man in") == 1);
   ASSERT(strings_equal(buf, "It is ") == 1);
   ASSERT(strings_equal(buf, "I") == 1);
   ASSERT(strings_equal(buf, "t is ") == 0);

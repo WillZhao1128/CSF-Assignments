@@ -76,6 +76,8 @@ int strings_equal(const char *s1, const char *s2) {
 	int matches = 0;
 	int search_word_len = find_string_length(s2);
 
+	
+
 	// Iterate over the length of the searched word.
 	for (int j = 0; j < search_word_len; j++) {
 		if (s1[j] == s2[j]) {

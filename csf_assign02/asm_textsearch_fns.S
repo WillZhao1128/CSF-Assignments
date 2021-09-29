@@ -19,11 +19,6 @@ matches: .space 8
     .globl strings_equal
     .globl count_occurrences
     
-
-/*
- * The following is just an example of how an assembly language
- * function would be defined
- */
 	
 read_line:
 	/* %rdi has file pointer, and %rsi has buffer pointer */
@@ -116,40 +111,48 @@ print_line:
 
 count_occurrences:
     subq $8, %rsp        /* Align the stack pointer*/
-    push %r13            /* Save callee-saved register values*/
+    /* Save callee-saved register values*/
+    push %rbp
+    push %r12
+    push %r13            
     push %r14            
     push %r15
-    movq $0, %r13        /* %r13 will store the number of iterations */
-    movq %rdi, %r14      /* %r14 has pointer to the line*/
-    movq $0, %r15        /* count == 0*/
-    movq $0, matches     /* counting the occurrences */
+
+    movq $0, %rbp         /* length */
+    movq $0, %r12       /* occurrences = 0 */
+    movq %rdi, %r13      /* %r13 has pointer to the line */
+    movq %rsi, %r14      /* %r14 has pointer to the string to find */
+    movq $0, %r15       /* count == 0*/
     
-    call find_string_length
-    movq %rax, %r13
 
-    movq %rsi, %rdi
-    call find_string_length
-    movq %rax, length  /* find the length of the word */
+    call find_string_length     /* find the length of the line */
+    movq %rax, %rbp
 
-    cmp length, %r13   /* if the line length is shorter than the word, end the loop */
+    movq %r14, %rdi
+    call find_string_length     /* find the length of the word */
+
+    cmpq %rax, %rbp               /* if the line length is shorter than the word, end the loop */
     jl .Lloop_count_occurrences_end
 
-    subq length, %r13  /* Calculate line_length - search_word length*/
+    subq %rax, %rbp               /* Calculate line_length - search_word length. This is num iterations*/
 
 .Lloop_count_occurrences_top:
-    cmp %r13, %r15
+    cmpq %rbp, %r15             /* for count < line_len - search_word_len*/
     jge .Lloop_count_occurrences_end
-    leaq (%r14, %r15, 1), %rdi
-    
+    leaq (%r14, %r15, 1), %rdi  /* calculate the address of the string line + i*/
+    movq %r14, %rsi             /* arg2 is string to search */
+    movq $0, %rax
     call strings_equal
-    addq %rax, matches
+    addq %rax, %r12            /* add value to occurences if found */
+    incq %r15
     jmp .Lloop_count_occurrences_top
 
 .Lloop_count_occurrences_end:
-    movq matches, %rax
+    movq %r12, %rax
     pop %r15
     pop %r14
     pop %r13
+    pop %rbp
     addq $8, %rsp
     ret
 
@@ -166,7 +169,7 @@ find_string_length:                 /* %rdi is base address */
 	jmp .Lfind_string_length_top
 
 .Lfind_string_length_done:
-	movq %r15, %rax                 /* return count */
+	movw %r15w, %ax                 /* return count */
 	pop %r15                        /* restore callee saved register value */
 	addq $8, %rsp                   /* realign stack */
 	ret
@@ -176,35 +179,37 @@ find_string_length:                 /* %rdi is base address */
 strings_equal:
     subq $8, %rsp                   /* Align the stack pointer*/
     /* Save callee-saved register values*/
+    push %r11                       /* search_word_len */
     push %r12                       /* matches */
     push %r13                       /* s1 */
     push %r14                       /* s2 */
     push %r15                       /* count */
 
-    movw $0, %r11w
-    movw $0, %r12w                  /* matches */
+    movw $0, %r12w                  /* matches = 0 */
     movq %rdi, %r13                 /* %r13 contains string 1*/
     movq %rsi, %r14                 /* %r14 contains string 2*/
-    movw $0, %r15w                  /* count = 0 */
+    movq $0, %r15                  /* count = 0 */
 
-    movq %rsi, %rdi                 /* put s2 into arg1 */
+    movq %r14, %rdi                 /* put s2 into arg1 */
     call find_string_length         /* find string length of string 2 */
     movw %ax, %r11w                 /* %r11 = length; no function calls so can use caller-saved */
 
 .Lloop_strings_equal_top:
-    cmpw %r11w, %r15w                  /* for count < len(string 2) */
-    jge .Lstrings_not_equal
-    movq (%r13, %r15, 1), %r10      /* get s1[count], store in %r10 */
-    cmp (%r14, %r15, 1), %r10       /* s1[count] == s2[count] */
-    je .Lchars_equal
+    cmpw %r11w, %r15w               /* for count < len(string 2) */
+    jge .Lstrings_equal_or_not
+    movb (%r13, %r15, 1), %r10b      /* get s1[count], store in %r10 */
+    movb (%r14, %r15, 1), %al      /* s1[count] == s2[count] */
+    cmpb %r10b, %al
+    jz .Lchars_equal
     incw %r15w                      /* count++ */
+    jmp .Lloop_strings_equal_top
 
 .Lchars_equal:
     incw %r12w                      /* matches++ */
     incw %r15w                      /* count++ */
     jmp .Lloop_strings_equal_top
-
-.Lstrings_not_equal:
+    
+.Lstrings_equal_or_not:
     cmpw %r12w, %r11w
     je .Lstrings_equal
     movq $0, %rax
@@ -218,5 +223,11 @@ strings_equal:
     pop %r14
     pop %r13
     pop %r12
+    pop %r11
     addq $8, %rsp
     ret
+
+handle_arguments:
+
+
+
