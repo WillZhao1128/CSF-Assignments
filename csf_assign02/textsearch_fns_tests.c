@@ -26,7 +26,7 @@ void cleanup(TestObjs *objs);
 void test_read_line(TestObjs *objs);
 void test_print_line();
 void test_count_occurrences(TestObjs *objs);
-void test_find_string_length(TestObjs *objs);
+void test_find_string_length();
 void test_strings_equal(TestObjs *objs);
 void test_handle_arguments();
 void test_calc_total_occurrences(TestObjs *objs);
@@ -43,9 +43,9 @@ int main(int argc, char **argv) {
 
   // TODO: invoke test functions
   
-  TEST(test_read_line);
+  //TEST(test_read_line);
   
-  TEST(test_print_line);
+  //TEST(test_print_line);
   //TEST(test_count_occurrences);
   TEST(test_find_string_length);
   //TEST(test_strings_equal);
@@ -186,44 +186,19 @@ void test_count_occurrences(TestObjs *objs) {
 }
 
 
-void test_find_string_length(TestObjs *objs) {
-  FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
-
-  char* buf = malloc(sizeof(char) * 512);
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-  
-  
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-
-  read_line(in, buf);
-  ASSERT(find_string_length(buf) == strlen(buf));
-  
+void test_find_string_length() {
   ASSERT(find_string_length("") == strlen(""));
   ASSERT(find_string_length("absa") == strlen("aasd"));
   ASSERT(find_string_length("22a a ") == strlen("22 b b"));
   ASSERT(find_string_length("     ") == strlen("12333"));
-
-  free(buf);
-  fclose(in);
-
+  ASSERT(find_string_length("I am testing this function called find_string_length") == strlen("I am testing this function called find_string_length"));
+  ASSERT(find_string_length("I am testing this function called find_string_length\n Hopefully this works as intended") == strlen("I am testing this function called find_string_length\n Hopefully this works as intended"));
+  ASSERT(find_string_length("\n\naa\n\n22\n") == strlen("\n\naa\n\n22\n"));
+  ASSERT(find_string_length("\0") == strlen("\0"));
+  ASSERT(find_string_length("00\0") == strlen("00\0"));
+  ASSERT(find_string_length("00000") == strlen("00000"));
+  ASSERT(find_string_length("I am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\n") == strlen("I am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\nI am testing this function called find_string_length\n"));
+  ASSERT(find_string_length("     \n   ") == strlen("     \n   "));
 }
 
 void test_strings_equal(TestObjs *objs) {
@@ -255,6 +230,8 @@ void test_strings_equal(TestObjs *objs) {
   free(buf);
   fclose(in);
 }
+
+
 /*
 void test_handle_arguments(){
   ASSERT(handle_arguments(3) == 2);
