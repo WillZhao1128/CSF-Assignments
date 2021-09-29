@@ -4,6 +4,9 @@
  * Aidan Aug, Will Zhao
  * aaug1@jhu.edu, wzhao33@jhu.edu
  */
+
+ .section .rodata
+ inv_inp: .string "Invalid Input"
  
 .section .data
 maxline: .long 511
@@ -18,6 +21,8 @@ matches: .space 8
     .globl find_string_length
     .globl strings_equal
     .globl count_occurrences
+    .globl handle_arguments
+    .globl calc_total_occurrences
     
 	
 read_line:
@@ -40,8 +45,8 @@ read_line:
     je .Lset_return_1
 
 .Lcheck_EOF:
-    cmpb $-1, %al       /* c != EOF */
-    je .Lset_return_0
+    cmpb $0, %al       /* c != EOF */
+    jl .Lset_return_0
 
 .Lcheck_MAXLINE:
     cmpw maxline, %r15w /*c < MAXLINE; if count = 512 and this character is a newline, */
@@ -226,8 +231,51 @@ strings_equal:
     pop %r11
     addq $8, %rsp
     ret
-
+/* -------------------------------------------------------------------------- */
 handle_arguments:
+    subq $8, %rsp
+    movq $0, %rax
+    cmpl $3, %edi
+    je .Largc_is_three
+    cmpl $4, %edi
+    je .Largc_is_four
+    movq stderr(%rip), %rdi         /* pass stderr */
+	movq $inv_inp, %rsi             /* pass "Invalid Input" */
+    movl $0, %eax
+    jmp .Lhandle_arguments_end
+
+.Largc_is_three:
+    movl $2, %eax
+    jmp .Lhandle_arguments_end
+
+.Largc_is_four:
+    movl $3, %eax
+    jmp .Lhandle_arguments_end
+
+.Lhandle_arguments_end:
+    addq $8, %rsp
+    ret
 
 
 
+calc_total_occurrences:
+    subq $8, %rsp                   /* Align the stack pointer*/
+    /* Save callee-saved register values*/
+    push %r12                       /* fileptr */
+    push %r13                       /* search word */
+    push %r14                       /* number arguments */
+    push %r15                       /* tot_occurrences */
+
+    movq $0, %r14
+    movq $0, %rax
+
+
+.Lloop_calc_tot_occ_top:
+    cmpb $0, %al
+    je .Lloop_calc_tot_occ_end
+    
+
+
+
+
+.Lloop_calc_tot_occ_end:

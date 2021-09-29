@@ -46,10 +46,10 @@ int main(int argc, char **argv) {
   TEST(test_read_line);
   
   TEST(test_print_line);
-  TEST(test_count_occurrences);
-  TEST(test_find_string_length);
-  TEST(test_strings_equal);
-  //TEST(test_handle_arguments);
+  //TEST(test_count_occurrences);
+  //TEST(test_find_string_length);
+  //TEST(test_strings_equal);
+  TEST(test_handle_arguments);
   //TEST(test_calc_total_occurrences);
   
   TEST_FINI();
@@ -232,12 +232,12 @@ void test_strings_equal(TestObjs *objs) {
 }
 
 
-/*
+
 void test_handle_arguments(){
   ASSERT(handle_arguments(3) == 2);
   ASSERT(handle_arguments(4) == 3);
 }
-*/
+
 
 /*
 void test_calc_total_occurrences(TestObjs *objs){
