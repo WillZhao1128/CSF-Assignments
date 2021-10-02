@@ -7,6 +7,7 @@
 
  .section .rodata
  inv_inp: .string "Invalid Input"
+ newline: .string "\n"
  
 .section .data
 maxline: .long 511
@@ -296,21 +297,21 @@ calc_total_occurrences:
     
     addq %rax, %r15                     /* tot_occurrences += count_occurrences(buf, search)*/
 
-    cmpl $3, %edx                       /* if argc == 3 */
+    cmpl $3, %r14d                       /* if argc == 3 */
     jne .Lloop_calc_tot_occ_iterate
     cmpq $0, %rax                       /* && num_occurrences > 0 */
     jle .Lloop_calc_tot_occ_iterate     
 
     /* fprintf(stdout, buf) */
     movl $0, %eax
-    movq stderr(%rip), %rdi             /* pass stderr */
+    movq stdout(%rip), %rdi             /* pass stderr */
 	movq %rbp, %rsi                     /* pass message string */
 	call fprintf
 	movl $0, %eax
 
     /* fprintf(stdout, /n) */
-    movq stderr(%rip), %rdi             /* pass stderr */
-	movq $10, %rsi                      /* pass message string */
+    movq stdout(%rip), %rdi             /* pass stderr */
+	movq $newline, %rsi                      /* pass message string */
 	call fprintf
 	movl $0, %eax
 

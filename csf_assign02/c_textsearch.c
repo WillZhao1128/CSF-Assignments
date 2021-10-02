@@ -25,10 +25,11 @@ int main(int argc, char **argv) {
   if (argc == 4) {
     char* c_flag = "-c";
     if (strings_equal(argv[1], c_flag)) {
+      fclose(fileptr);
       fprintf(stdout, "%d occurrence(s)\n", tot_occurrences);
       return 0;
     } else {
-      printf("argv[1]: %s\n", argv[1]);
+      fclose(fileptr);
       fprintf(stderr, "Invalid input\n");
       exit(1);
     }
