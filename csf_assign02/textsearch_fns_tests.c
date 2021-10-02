@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
   
   TEST(test_read_line);
   
-  //TEST(test_print_line);
-  //TEST(test_count_occurrences);
-  //TEST(test_find_string_length);
-  //TEST(test_strings_equal);
-  //TEST(test_handle_arguments);
+  TEST(test_print_line);
+  TEST(test_count_occurrences);
+  TEST(test_find_string_length);
+  TEST(test_strings_equal);
+  TEST(test_handle_arguments);
   TEST(test_calc_total_occurrences);
   
   TEST_FINI();
@@ -162,7 +162,7 @@ void test_count_occurrences(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
 
   char* hello = "hello";
-  //ASSERT(count_occurrences(hello, "h") == 1);
+  ASSERT(count_occurrences(hello, "h") == 1);
 
   char* buf = malloc(sizeof(char) * 512);
   read_line(in, buf);

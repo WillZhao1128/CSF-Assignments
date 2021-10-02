@@ -24,74 +24,74 @@ maxline: .long 511
     
 	
 read_line:
-	/* %rdi has file pointer, and %rsi has buffer pointer */
-    subq $8, %rsp       /* Align the stack pointer*/
-    /* Save callee-saved register values*/
-    push %r13           /* buffer pointer */
-    push %r14           /* file pointer */
-    push %r15           /* count */
+    subq $8, %rsp           /* Align the stack pointer*/
 
-    movw $0, %r15w      /* count = 0; w b/c max val is 512, which is 9 bits*/
-    movq %rsi, %r13     /* let r13 store address of buf */
-    movq %rdi, %r14     /* %r14 has file pointer */
-    movb $0, %al        /* initialize return register to 0*/
-    call fgetc          /* %rdi has the file pointer */
+    /* Save callee-saved register values*/
+    pushq %r13                  /* buffer pointer */
+    pushq %r14                  /* file pointer */
+    pushq %r15                  /* count */
+
+    movw $0, %r15w              /* count = 0; w b/c max val is 512, which is 9 bits*/
+    movq %rdi, %r14             /* %r14 has file pointer */
+    movq %rsi, %r13             /* %r13 = buf */
+    
+    call fgetc                  /* fgetc(%rdi = fileptr) */
     
 	
 .Lcheck_end_of_line:
-    cmpb $10, %al       /* c != '\n'; b because working with characters */
+    cmpb $10, %al               /* c != '\n'; b because working with characters */
     je .Lset_return_1
 
 .Lcheck_EOF:
-    cmpb $0, %al       /* c != EOF */
+    cmpb $0, %al                /* c != EOF */
     jl .Lset_return_0
 
 .Lcheck_MAXLINE:
-    cmpw maxline, %r15w /*c < MAXLINE; if count = 512 and this character is a newline, */
+    cmpw maxline, %r15w         /* c < MAXLINE; if count = 512 and this character is a newline, */
     jg .Lset_return_1
     
-    movq %rax, (%r13, %r15, 1) /* buf[count] = c*/
-    movq %r14, %rdi     /* %r14 has file pointer, so put back into arg1 register */
+    movb %al, (%r13, %r15, 1)   /* buf[count] = c*/
+    movq %r14, %rdi             /* %r14 has file pointer, so put back into arg1 register */
     call fgetc
     
-    incq %r15           /* count++ */
+    incw %r15w                  /* count++ */
     jmp .Lcheck_end_of_line
 
 .Lset_return_0:
-    movq $0, %rax       /* set return value to 0 */
+    movq $0, %rax               /* set return value to 0 */
     jmp .Lloop_end
 
 .Lset_return_1:
-    movq $1, %rax       /* set return value to 1 */
+    movq $1, %rax               /* set return value to 1 */
     jmp .Lloop_end
 
 .Lloop_end:
     movq $0, (%r13, %r15, 1) /* buf[count] = '\0' */
     /* Restore callee-saved registers, and realign stack */
-    pop %r15
-    pop %r14
-    pop %r13
+    popq %r15
+    popq %r14
+    popq %r13
     addq $8, %rsp
     ret
 
 /* -------------------------------------------------------------------------- */
 
 print_line:
-    /* %rdi has file pointer, and %rsi has buffer pointer */
     subq $8, %rsp               /* Align the stack pointer*/
+
     /* Save callee-saved register values*/
-    push %r12                   /* length variable */
-    push %r13                   /* file pointer */
-    push %r14                   /* buffer pointer */
-    push %r15                   /* count variable */
+    pushq %r12                   /* length */
+    pushq %r13                   /* file pointer */
+    pushq %r14                   /* buffer pointer */
+    pushq %r15                   /* count */
 
-    movw $0, %r15w              /* count = 0 */
-    movq %rdi, %r13             /* %r13 = file pointer */
-    movq %rsi, %r14             /* %r14 = buffer pointer */
+    movw $0, %r15w               /* count = 0 */
+    movq %rdi, %r13              /* %r13 = file pointer */
+    movq %rsi, %r14              /* %r14 = buffer pointer */
 
-    movq %r14, %rdi             /* set arg1 equal to the buffer pointer */
-    call find_string_length     /* find the length of the buffer pointer */
-    movw %ax, %r12w             /* store this value in %r12; max value is 512 so use w */
+    movq %r14, %rdi              /* set arg1 equal to the buffer pointer */
+    call find_string_length      /* find_string_length(buf) */
+    movq %rax, %r12              /* store this value in %r12 */
 
 .Lloop_top_print_line:
     cmpw %r12w, %r15w           /* for count < length */
@@ -104,57 +104,56 @@ print_line:
 
 .Lloop_end_print_line:
     /* Restore callee saved registers, and realign stack */
-    pop %r15
-    pop %r14
-    pop %r13
-    pop %r12
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
     addq $8, %rsp
     ret
 /* -------------------------------------------------------------------------- */
 
 count_occurrences:
     subq $8, %rsp        /* Align the stack pointer*/
-    /* Save callee-saved register values*/
-    push %rbp                   /* length */
-    push %r12                   /* occurrences */
-    push %r13                   /* *line */
-    push %r14                   /* *str */
-    push %r15                   /* count */
-    subq $8, %rsp
-    movq $0, %rax
-    
 
-    movq $0, %rbp               /* length = 0 */
+    /* Save callee-saved register values*/
+    pushq %rbp                   /* length */
+    pushq %r12                   /* occurrences */
+    pushq %r13                   /* *line */
+    pushq %r14                   /* *str */
+    pushq %r15                   /* count */
+    subq $8, %rsp
+
     movq $0, %r12               /* occurrences = 0 */
     movq $0, %r15               /* count == 0 */
     movq %rdi, %r13             /* %r13 = *line */
     movq %rsi, %r14             /* %r14 = *str */
 
-    call find_string_length     /* int line_len = find_string_length(line) */
-    movq %rax, %rbp             /* line_len = return */
+    call find_string_length     
+    movq %rax, %rbp             /* line_len = find_string_length(line) */
 
     movq %r14, %rdi
-    call find_string_length     /* find the length of the word */
+    call find_string_length     /* find_string_len(str) */
     cmpq %rax, %rbp             /* if the line length is shorter than the word, end the loop */
     jl .Lloop_count_occurrences_end
 
     subq %rax, %rbp             /* line_length - search_word_len = num iterations*/
-    addq $1, %rbp               /* rbp + 1 */
+    addq $1, %rbp               /* %rbp + 1 */
 
 .Lloop_count_occurrences_top:
-    cmpq %rbp, %r15             /* for count < line_len - search_word_len*/
+    cmpw %bp, %r15w             /* while count < line_len - search_word_len */
     jge .Lloop_count_occurrences_end
-    leaq (%r13, %r15, 1), %rdi  /* calculate the address of the string line + i*/
-    movq %r14, %rsi             /* arg2 is string to search */
+    leaq (%r13, %r15, 1), %rdi  /* line + i (address) */
+    movq %r14, %rsi             /* arg2 is str */
 
-    movq $0, %rax
     call strings_equal
-    addq %rax, %r12             /* add value to occurences if found */
-    incq %r15
+    addb %al, %r12b             /* occurrences += strings_equal(line + i, str) */
+    incw %r15w
     jmp .Lloop_count_occurrences_top
 
 .Lloop_count_occurrences_end:
-    movq %r12, %rax
+    movq %r12, %rax             /* return occurrences */
+
+    /* realign stack pointer and restore all callee-saved registers */
     addq $8, %rsp
     popq %r15
     popq %r14
@@ -165,7 +164,7 @@ count_occurrences:
     ret
 
 /* -------------------------------------------------------------------------- */
-find_string_length:                 /* %rdi is base address */
+find_string_length:                 
 	subq $8, %rsp	                /* Align stack */
 	pushq %r15                      /* Save callee saved register value */
 	movw $0, %r15w                  /* count = 0 */
@@ -186,17 +185,18 @@ find_string_length:                 /* %rdi is base address */
 
 strings_equal:
     subq $8, %rsp                   /* Align the stack pointer*/
+
     /* Save callee-saved register values*/
-    push %r11                       /* search_word_len */
-    push %r12                       /* matches */
-    push %r13                       /* s1 */
-    push %r14                       /* s2 */
-    push %r15                       /* count */
+    pushq %r11                       /* search_word_len */
+    pushq %r12                       /* matches */
+    pushq %r13                       /* s1 */
+    pushq %r14                       /* s2 */
+    pushq %r15                       /* count */
 
     movw $0, %r12w                  /* matches = 0 */
     movq %rdi, %r13                 /* %r13 contains string 1*/
     movq %rsi, %r14                 /* %r14 contains string 2*/
-    movq $0, %r15                  /* count = 0 */
+    movq $0, %r15                   /* count = 0 */
 
     movq %r14, %rdi                 /* put s2 into arg1 */
     call find_string_length         /* find string length of string 2 */
@@ -205,8 +205,8 @@ strings_equal:
 .Lloop_strings_equal_top:
     cmpw %r11w, %r15w               /* for count < len(string 2) */
     jge .Lstrings_equal_or_not
-    movb (%r13, %r15, 1), %r10b      /* get s1[count], store in %r10 */
-    movb (%r14, %r15, 1), %al      /* s1[count] == s2[count] */
+    movb (%r13, %r15, 1), %r10b     /* get s1[count], store in %r10 */
+    movb (%r14, %r15, 1), %al       /* s1[count] == s2[count] */
     cmpb %r10b, %al
     jz .Lchars_equal
     incw %r15w                      /* count++ */
@@ -217,7 +217,7 @@ strings_equal:
     incw %r15w                      /* count++ */
     jmp .Lloop_strings_equal_top
     
-.Lstrings_equal_or_not:
+.Lstrings_equal_or_not:             /* if matches == search_word_len */
     cmpw %r12w, %r11w
     je .Lstrings_equal
     movq $0, %rax
@@ -227,22 +227,23 @@ strings_equal:
     movq $1, %rax
 
 .Lloop_end_strings_equal:
-    pop %r15
-    pop %r14
-    pop %r13
-    pop %r12
-    pop %r11
+    /* restore callee-saved registers and realign stack*/
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %r11
     addq $8, %rsp
     ret
 /* -------------------------------------------------------------------------- */
 handle_arguments:
-    subq $8, %rsp
+    subq $8, %rsp                   /* align stack pointer*/
     movq $0, %rax
-    cmpl $3, %edi
+    cmpl $3, %edi                   /* if arc == 3 */
     je .Largc_is_three
-    cmpl $4, %edi
+    cmpl $4, %edi                   /* if arc == 4 */
     je .Largc_is_four
-    movq stderr(%rip), %rdi         /* pass stderr */
+    movq stderr(%rip), %rdi         /* else err: pass stderr */
 	movq $inv_inp, %rsi             /* pass "Invalid Input" */
     movl $0, %eax
     jmp .Lhandle_arguments_end
@@ -256,7 +257,7 @@ handle_arguments:
     jmp .Lhandle_arguments_end
 
 .Lhandle_arguments_end:
-    addq $8, %rsp
+    addq $8, %rsp                   /* realign stack pointer*/
     ret
 
 /* -------------------------------------------------------------------------- */
@@ -264,61 +265,69 @@ handle_arguments:
 calc_total_occurrences:
     subq $8, %rsp                   /* Align the stack pointer*/
     /* Save callee-saved register values*/
-    pushq %r12                       /* fileptr */
-    pushq %r13                       /* search word */
-    pushq %r14                       /* number arguments */
-    pushq %r15                       /* tot_occurrences */
+    pushq %r12                          /* fileptr */
+    pushq %r13                          /* search word */
+    pushq %r14                          /* argc */
+    pushq %r15                          /* tot_occurrences */
 
-    movq %rdi, %r12
+    movb $1, %al                        /* flag = 1 */
+    movq %rdi, %r12                     
     movq %rsi, %r13
-    movl %edx, %r14d
-    movl $0, %r15d
-    movq $1, %rax
+    movl %edx, %r14d    
+    movl $0, %r15d                      /* tot_occurrences = 0 */
 
 
 .Lloop_calc_tot_occ_top:
-    cmpb $0, %al
+    cmpb $0, %al                        /* while(flag == 1) */
     je .Lloop_calc_tot_occ_end
-    pushq %rbp
-    subq $512, %rsp               /* allocate 512 bits for buffer*/
-    movq %rsp, %rbp               /* char* buf = malloc(sizeof(char) * 512*/
+    pushq %rbp                          /* save callee-saved register */
+    subq $512, %rsp                     /* allocate 512 bits for buffer */
+    movq %rsp, %rbp                     /* char* buf = malloc(sizeof(char) * 512*/
     
-    movq %r12, %rdi              
+    movq %r12, %rdi             
     movq %rbp, %rsi
-    call read_line                /* flag = read_line(fileptr, buf)*/
-    pushq %rax                    /* save flag value */
+    call read_line                      /* flag = read_line(fileptr, buf)*/
+    pushq %rax                          /* save flag value (pushing %al messing things up)*/
 
     movq %rbp, %rdi              
     movq %r13, %rsi
-    subq $8, %rsp
-    call count_occurrences                /* flag = read_line(fileptr, buf)*/
-    addq $8, %rsp
-    addq %rax, %r15
+    
+    call count_occurrences              /* flag = read_line(fileptr, buf)*/
+    
+    addq %rax, %r15                     /* tot_occurrences += count_occurrences(buf, search)*/
 
-    cmpl $3, %edx
+    cmpl $3, %edx                       /* if argc == 3 */
     jne .Lloop_calc_tot_occ_iterate
-    cmpq $0, %rax
-    jle .Lloop_calc_tot_occ_iterate    
+    cmpq $0, %rax                       /* && num_occurrences > 0 */
+    jle .Lloop_calc_tot_occ_iterate     
 
-.Lprint_line_with_word:
+    /* fprintf(stdout, buf) */
     movl $0, %eax
-    movq stderr(%rip), %rdi /* pass stderr */
-	movq %rbp, %rsi       /* pass message string */
+    movq stderr(%rip), %rdi             /* pass stderr */
+	movq %rbp, %rsi                     /* pass message string */
+	call fprintf
+	movl $0, %eax
+
+    /* fprintf(stdout, /n) */
+    movq stderr(%rip), %rdi             /* pass stderr */
+	movq $10, %rsi                      /* pass message string */
 	call fprintf
 	movl $0, %eax
 
 .Lloop_calc_tot_occ_iterate:
-    popq %rax
+    popq %rax                           /* get flag */
     addq $512, %rsp
-    popq %rbp
+    popq %rbp                           /* free(buf) */
     jmp .Lloop_calc_tot_occ_top
-    
 
 .Lloop_calc_tot_occ_end:
-    movq %r15, %rax
-    popq %r15                       /* fileptr */
-    popq %r14                       /* search word */
-    popq %r13                       /* number arguments */
-    popq %r12                       /* tot_occurrences */
-    addq $8, %rsp
+    movq %r15, %rax                 /* return tot_occurrences */
+
+    /* restore callee-saved registers */
+    popq %r15                       
+    popq %r14                       
+    popq %r13                       
+    popq %r12                  
+
+    addq $8, %rsp /* re-align stack */
     ret

@@ -8,13 +8,21 @@
 .section .text
 sInputFmt: .string "%s"
 
+.section .bss
+.align 1
+line_in_file: .space (1 * 511)
+
 
 	.globl main
 main:
 	/* TODO: implement the main function */
-	/*
+	
 	subq $8, %rsp
 
+	call handle_arguments
+	
+	leaq (%rsi, )
+	
 	movq $sInputFmt, %rdi
 	movq $buf, %rsi
 	call scanf
@@ -23,5 +31,5 @@ main:
 	call print_line
 
 	addq $8, %rsp
-	*/
+	
 	ret
