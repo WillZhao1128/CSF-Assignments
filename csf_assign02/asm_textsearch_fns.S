@@ -12,8 +12,6 @@
 maxline: .long 511
 
 .section .bss
-length: .space 4
-matches: .space 8
 
 .section .text
     .globl read_line
@@ -117,47 +115,52 @@ print_line:
 count_occurrences:
     subq $8, %rsp        /* Align the stack pointer*/
     /* Save callee-saved register values*/
-    push %rbp
-    push %r12
-    push %r13            
-    push %r14            
-    push %r15
-
-    movq $0, %rbp         /* length */
-    movq $0, %r12       /* occurrences = 0 */
-    movq %rdi, %r13      /* %r13 has pointer to the line */
-    movq %rsi, %r14      /* %r14 has pointer to the string to find */
-    movq $0, %r15       /* count == 0*/
+    push %rbp                   /* length */
+    push %r12                   /* occurrences */
+    push %r13                   /* *line */
+    push %r14                   /* *str */
+    push %r15                   /* count */
+    subq $8, %rsp
+    movq $0, %rax
     
 
-    call find_string_length     /* find the length of the line */
-    movq %rax, %rbp
+    movq $0, %rbp               /* length = 0 */
+    movq $0, %r12               /* occurrences = 0 */
+    movq $0, %r15               /* count == 0 */
+    movq %rdi, %r13             /* %r13 = *line */
+    movq %rsi, %r14             /* %r14 = *str */
+
+    call find_string_length     /* int line_len = find_string_length(line) */
+    movq %rax, %rbp             /* line_len = return */
 
     movq %r14, %rdi
     call find_string_length     /* find the length of the word */
-
-    cmpq %rax, %rbp               /* if the line length is shorter than the word, end the loop */
+    cmpq %rax, %rbp             /* if the line length is shorter than the word, end the loop */
     jl .Lloop_count_occurrences_end
 
-    subq %rax, %rbp               /* Calculate line_length - search_word length. This is num iterations*/
+    subq %rax, %rbp             /* line_length - search_word_len = num iterations*/
+    addq $1, %rbp               /* rbp + 1 */
 
 .Lloop_count_occurrences_top:
     cmpq %rbp, %r15             /* for count < line_len - search_word_len*/
     jge .Lloop_count_occurrences_end
-    leaq (%r14, %r15, 1), %rdi  /* calculate the address of the string line + i*/
+    leaq (%r13, %r15, 1), %rdi  /* calculate the address of the string line + i*/
     movq %r14, %rsi             /* arg2 is string to search */
+
     movq $0, %rax
     call strings_equal
-    addq %rax, %r12            /* add value to occurences if found */
+    addq %rax, %r12             /* add value to occurences if found */
     incq %r15
     jmp .Lloop_count_occurrences_top
 
 .Lloop_count_occurrences_end:
     movq %r12, %rax
-    pop %r15
-    pop %r14
-    pop %r13
-    pop %rbp
+    addq $8, %rsp
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %rbp
     addq $8, %rsp
     ret
 
@@ -256,26 +259,66 @@ handle_arguments:
     addq $8, %rsp
     ret
 
-
+/* -------------------------------------------------------------------------- */
 
 calc_total_occurrences:
     subq $8, %rsp                   /* Align the stack pointer*/
     /* Save callee-saved register values*/
-    push %r12                       /* fileptr */
-    push %r13                       /* search word */
-    push %r14                       /* number arguments */
-    push %r15                       /* tot_occurrences */
+    pushq %r12                       /* fileptr */
+    pushq %r13                       /* search word */
+    pushq %r14                       /* number arguments */
+    pushq %r15                       /* tot_occurrences */
 
-    movq $0, %r14
-    movq $0, %rax
+    movq %rdi, %r12
+    movq %rsi, %r13
+    movl %edx, %r14d
+    movl $0, %r15d
+    movq $1, %rax
 
 
 .Lloop_calc_tot_occ_top:
     cmpb $0, %al
     je .Lloop_calc_tot_occ_end
+    pushq %rbp
+    subq $512, %rsp               /* allocate 512 bits for buffer*/
+    movq %rsp, %rbp               /* char* buf = malloc(sizeof(char) * 512*/
+    
+    movq %r12, %rdi              
+    movq %rbp, %rsi
+    call read_line                /* flag = read_line(fileptr, buf)*/
+    pushq %rax                    /* save flag value */
+
+    movq %rbp, %rdi              
+    movq %r13, %rsi
+    subq $8, %rsp
+    call count_occurrences                /* flag = read_line(fileptr, buf)*/
+    addq $8, %rsp
+    addq %rax, %r15
+
+    cmpl $3, %edx
+    jne .Lloop_calc_tot_occ_iterate
+    cmpq $0, %rax
+    jle .Lloop_calc_tot_occ_iterate    
+
+.Lprint_line_with_word:
+    movl $0, %eax
+    movq stderr(%rip), %rdi /* pass stderr */
+	movq %rbp, %rsi       /* pass message string */
+	call fprintf
+	movl $0, %eax
+
+.Lloop_calc_tot_occ_iterate:
+    popq %rax
+    addq $512, %rsp
+    popq %rbp
+    jmp .Lloop_calc_tot_occ_top
     
 
-
-
-
 .Lloop_calc_tot_occ_end:
+    movq %r15, %rax
+    popq %r15                       /* fileptr */
+    popq %r14                       /* search word */
+    popq %r13                       /* number arguments */
+    popq %r12                       /* tot_occurrences */
+    addq $8, %rsp
+    ret

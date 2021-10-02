@@ -45,12 +45,12 @@ int main(int argc, char **argv) {
   
   TEST(test_read_line);
   
-  TEST(test_print_line);
+  //TEST(test_print_line);
   //TEST(test_count_occurrences);
   //TEST(test_find_string_length);
   //TEST(test_strings_equal);
-  TEST(test_handle_arguments);
-  //TEST(test_calc_total_occurrences);
+  //TEST(test_handle_arguments);
+  TEST(test_calc_total_occurrences);
   
   TEST_FINI();
 
@@ -161,6 +161,9 @@ void test_print_line() {
 void test_count_occurrences(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
 
+  char* hello = "hello";
+  //ASSERT(count_occurrences(hello, "h") == 1);
+
   char* buf = malloc(sizeof(char) * 512);
   read_line(in, buf);
   ASSERT(count_occurrences(buf, "a") == 6);
@@ -239,7 +242,7 @@ void test_handle_arguments(){
 }
 
 
-/*
+
 void test_calc_total_occurrences(TestObjs *objs){
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
   ASSERT(calc_total_occurrences(in, "a", 4) == 17);
@@ -254,4 +257,3 @@ void test_calc_total_occurrences(TestObjs *objs){
   
   fclose(in);
 }
-*/
