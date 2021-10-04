@@ -22,6 +22,11 @@ int read_line(FILE *in, char *buf) {
 		buf[count] = c;
 		c = fgetc(in);
 		count++;
+		if (count == MAXLINE) {
+			while (c != '\n' && c != EOF) {
+				c = fgetc(in);
+			}
+		}
 	}
 	buf[count] = '\0';
 

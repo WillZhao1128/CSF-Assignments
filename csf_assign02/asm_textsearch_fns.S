@@ -56,6 +56,8 @@ read_line:
     call fgetc
     
     incq %r15                  /* count++ */
+    cmpq $511, %r15
+    je .Lget_next_line
     jmp .Lcheck_end_of_line
 
 .Lset_return_0:
@@ -65,6 +67,15 @@ read_line:
 .Lset_return_1:
     movq $1, %rax               /* set return value to 1 */
     jmp .Lloop_end
+
+.Lget_next_line:
+    cmpb $10, %al
+    je .Lcheck_end_of_line
+    cmpb $0, %al
+    jl .Lcheck_end_of_line
+    call fgetc
+    jmp .Lget_next_line
+
 
 .Lloop_end:
     movq $0, (%r13, %r15, 1) /* buf[count] = '\0' */

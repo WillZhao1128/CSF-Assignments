@@ -74,7 +74,6 @@ main:
 
 .Lfile_err:
 	movq %r15, %rdi
-	call fclose
 
 	movl $0, %eax
 	movq stderr(%rip), %rdi /* pass stderr */
