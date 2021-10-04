@@ -31,6 +31,7 @@ read_line:
     pushq %r13                  /* buffer pointer */
     pushq %r14                  /* file pointer */
     pushq %r15                  /* count */
+    subq $8, %rsp
 
     movq $0, %r15              /* count = 0; w b/c max val is 512, which is 9 bits*/
     movq %rdi, %r14             /* %r14 has file pointer */
@@ -73,6 +74,7 @@ read_line:
     je .Lcheck_end_of_line
     cmpb $0, %al
     jl .Lcheck_end_of_line
+    movq %r14, %rdi             /* %r14 has file pointer, so put back into arg1 register */
     call fgetc
     jmp .Lget_next_line
 
@@ -80,6 +82,7 @@ read_line:
 .Lloop_end:
     movq $0, (%r13, %r15, 1) /* buf[count] = '\0' */
     /* Restore callee-saved registers, and realign stack */
+    addq $8, %rsp
     popq %r15
     popq %r14
     popq %r13
