@@ -10,7 +10,7 @@ s_read_Fmt: .string "r"
 s_file_err: .string "Could not open file\n"
 s_input_err: .string "Invalid input\n"
 s_c_flag: .string "-c"
-s_occurrences: .string "%d occurrences(s)\n"
+s_occurrences: .string "%d occurrence(s)\n"
 s_hi: .string "val is %d"
 
 .section .bss

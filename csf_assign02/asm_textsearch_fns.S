@@ -10,7 +10,7 @@
  newline: .string "\n"
  
 .section .data
-maxline: .long 511
+maxline: .value 511
 
 .section .bss
 
@@ -32,7 +32,7 @@ read_line:
     pushq %r14                  /* file pointer */
     pushq %r15                  /* count */
 
-    movw $0, %r15w              /* count = 0; w b/c max val is 512, which is 9 bits*/
+    movq $0, %r15              /* count = 0; w b/c max val is 512, which is 9 bits*/
     movq %rdi, %r14             /* %r14 has file pointer */
     movq %rsi, %r13             /* %r13 = buf */
     
@@ -48,14 +48,14 @@ read_line:
     jl .Lset_return_0
 
 .Lcheck_MAXLINE:
-    cmpw maxline, %r15w         /* c < MAXLINE; */
+    cmpq $511, %r15         /* count < MAXLINE; */
     jge .Lset_return_1
     
     movb %al, (%r13, %r15, 1)   /* buf[count] = c*/
     movq %r14, %rdi             /* %r14 has file pointer, so put back into arg1 register */
     call fgetc
     
-    incw %r15w                  /* count++ */
+    incq %r15                  /* count++ */
     jmp .Lcheck_end_of_line
 
 .Lset_return_0:
@@ -147,7 +147,7 @@ count_occurrences:
     movq %r14, %rsi             /* arg2 is str */
 
     call strings_equal
-    addb %al, %r12b             /* occurrences += strings_equal(line + i, str) */
+    addw %ax, %r12w             /* occurrences += strings_equal(line + i, str) */
     incw %r15w
     jmp .Lloop_count_occurrences_top
 
@@ -291,6 +291,7 @@ calc_total_occurrences:
     movq %rbp, %rsi
     call read_line                      /* flag = read_line(fileptr, buf)*/
     pushq %rax                          /* save flag value (pushing %al messing things up)*/
+
 
     movq %rbp, %rdi              
     movq %r13, %rsi
