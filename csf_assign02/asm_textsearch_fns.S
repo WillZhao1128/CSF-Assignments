@@ -46,7 +46,7 @@ read_line:
     jl .Lset_return_0
 
 .Lcheck_MAXLINE:
-    cmpw $511, %r15w             /* count < MAXLINE; */
+    cmpw maxline, %r15w             /* count < MAXLINE; */
     jge .Lset_return_1
     
     movb %al, (%r13, %r15, 1)    /* buf[count] = c*/
@@ -54,7 +54,7 @@ read_line:
     call fgetc
     
     incw %r15w                   /* count++ */
-    cmpw $511, %r15w             /* if count == 511, then must find next line*/ 
+    cmpw maxline, %r15w             /* if count == 511, then must find next line*/ 
     je .Lget_next_line
     jmp .Lcheck_end_of_line
 
