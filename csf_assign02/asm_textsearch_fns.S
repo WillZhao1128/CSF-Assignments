@@ -240,14 +240,16 @@ strings_equal:
 handle_arguments:
     subq $8, %rsp                   /* align stack pointer*/
     movq $0, %rax
-    cmpl $3, %edi                   /* if arc == 3 */
+    cmpq $3, %rdi                   /* if arc == 3 */
     je .Largc_is_three
-    cmpl $4, %edi                   /* if arc == 4 */
+    cmpq $4, %rdi                   /* if arc == 4 */
     je .Largc_is_four
     movq stderr(%rip), %rdi         /* else err: pass stderr */
 	movq $inv_inp, %rsi             /* pass "Invalid Input" */
+    call fprintf
     movl $0, %eax
-    jmp .Lhandle_arguments_end
+    call exit
+    
 
 .Largc_is_three:
     movl $2, %eax

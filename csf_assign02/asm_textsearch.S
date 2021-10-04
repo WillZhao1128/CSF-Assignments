@@ -11,6 +11,7 @@ s_file_err: .string "Could not open file\n"
 s_input_err: .string "Invalid input\n"
 s_c_flag: .string "-c"
 s_occurrences: .string "%d occurrences(s)\n"
+s_hi: .string "val is %d"
 
 .section .bss
 .align 1
@@ -30,8 +31,10 @@ main:
 	movq %rdi, %r13
 	movq %rsi, %r14
 
+
 	call handle_arguments /* int file_ind = handle_arguments(argc)*/
 	movq %rax, %r12
+
 	
 	movq (%r14, %r12, 8), %rdi /* argv[file_ind] */
 	movq $s_read_Fmt, %rsi
@@ -51,7 +54,8 @@ main:
 	cmpq $4, %r13
 	jne .Lend
 	movq $1, %r10
-	leaq (%r14, %r10, 8), %rdi
+
+	movq (%r14, %r10, 8), %rdi
 	movq $s_c_flag, %rsi
 	call strings_equal
 	cmpq $1, %rax
@@ -65,6 +69,7 @@ main:
 	movq %r12, %rdx
 	call fprintf
 	movl $0, %eax
+	jmp .Lend
 
 
 .Lfile_err:
@@ -96,7 +101,6 @@ main:
 	call fprintf
 	movl $0, %eax
 	
-
 	addq $8, %rsp
 	popq %r14   /* file_ind */
 	popq %r13   /* arg c*/
