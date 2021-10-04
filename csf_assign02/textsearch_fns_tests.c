@@ -14,6 +14,8 @@
 
 typedef struct {
   const char *pandp;
+  const char *max_length;
+  const char *longer;
 } TestObjs;
 
 
@@ -30,7 +32,7 @@ void test_find_string_length();
 void test_strings_equal(TestObjs *objs);
 void test_handle_arguments();
 void test_calc_total_occurrences(TestObjs *objs);
-
+void test_read_line_complex(TestObjs *objs);
 
 int main(int argc, char **argv) {
   // Allow the name of the test function to execute to be specified
@@ -43,15 +45,15 @@ int main(int argc, char **argv) {
 
   // TODO: invoke test functions
   
-  TEST(test_read_line);
-  
-  TEST(test_print_line);
-  TEST(test_count_occurrences);
-  TEST(test_find_string_length);
-  TEST(test_strings_equal);
-  TEST(test_handle_arguments);
-  TEST(test_calc_total_occurrences);
-  
+  //TEST(test_read_line);
+  //TEST(test_print_line);
+  //TEST(test_count_occurrences);
+  //TEST(test_find_string_length);
+  //TEST(test_strings_equal);
+  //TEST(test_handle_arguments);
+  //TEST(test_calc_total_occurrences);
+  TEST(test_read_line_complex);
+
   TEST_FINI();
 
   return 0;
@@ -70,6 +72,10 @@ TestObjs *setup(void) {
     "fixed in the minds of the surrounding families, that he is\n"
     "considered as the rightful property of some one or other of their\n"
     "daughters.\n";
+
+  objs->max_length = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
+  objs->longer =     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
+
   return objs;
 }
 
@@ -77,7 +83,7 @@ void cleanup(TestObjs *objs) {
   free(objs);
 }
 
-
+// Given
 void test_read_line(TestObjs *objs) {
   // the fmemopen function allows us to treat a character string
   // as an input file
@@ -117,6 +123,7 @@ void test_read_line(TestObjs *objs) {
 
 // TODO: implementations of other test functions
 void test_print_line() {
+  // Test basic case
   char buf1[512];
   FILE *out = fmemopen(buf1, sizeof(buf1), "w");
   print_line(out, "qweqwassdd");
@@ -126,7 +133,7 @@ void test_print_line() {
   ASSERT(0 == strcmp(buf1, "qweqwassdd"));
   fclose(out);
 
-
+  // Test empty string
   char buf2[512];
   out = fmemopen(buf2, sizeof(buf2), "w");
   print_line(out, " ");
@@ -136,6 +143,7 @@ void test_print_line() {
   ASSERT(0 == strcmp(buf2, " "));
   fclose(out);
 
+  // Test spaces and newlines
   char buf3[512];
   out = fmemopen(buf3, sizeof(buf3), "w");
   print_line(out, " asd qwe  aaa \n as");
@@ -145,6 +153,7 @@ void test_print_line() {
   ASSERT(0 == strcmp(buf3, " asd qwe  aaa \n as"));
   fclose(out);
 
+  // Test multiple newlines together
   char buf4[512];
   out = fmemopen(buf4, sizeof(buf4), "w");
   print_line(out, "             \n\n\n aaaaas a");
@@ -153,39 +162,45 @@ void test_print_line() {
   out = fmemopen(buf4, sizeof(buf4), "r");
   ASSERT(0 == strcmp(buf4, "             \n\n\n aaaaas a"));
   fclose(out);
-  
-
 }
 
 
 void test_count_occurrences(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
 
-  char* hello = "hello";
-  ASSERT(count_occurrences(hello, "h") == 1);
 
-  char* buf = malloc(sizeof(char) * 512);
-  read_line(in, buf);
+  char* buf = malloc(sizeof(char) * 512); // 511 chararacters + 1 for /0
+  // Test first line
+  fgets(buf, 511, in);
   ASSERT(count_occurrences(buf, "a") == 6);
   ASSERT(count_occurrences(buf, "It") == 1);
   ASSERT(count_occurrences(buf, " in") == 1);
   ASSERT(count_occurrences(buf, " inas") == 0);
-
-  read_line(in, buf);
+  // Test second line and empty strings
+  fgets(buf, 511, in);
   ASSERT(count_occurrences(buf, "pos") == 1);
   ASSERT(count_occurrences(buf, "wife.") == 1);
   ASSERT(count_occurrences(buf, " ") == 11);
   ASSERT(count_occurrences(buf, "  ") == 0);
-
-  read_line(in, buf);
+  // Test "/n" line
+  fgets(buf, 511, in);
   ASSERT(count_occurrences(buf, "pos") == 0);
   ASSERT(count_occurrences(buf, "wife.") == 0);
   ASSERT(count_occurrences(buf, "sqwasd") == 0);
   ASSERT(count_occurrences(buf, "  a") == 0);
 
+  // Test end of file line
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  ASSERT(count_occurrences(buf, "daughters.") == 1);
+  ASSERT(count_occurrences(buf, " ") == 0);
+  ASSERT(count_occurrences(buf, ".") == 1);
+
   free(buf);
   fclose(in);
-
 }
 
 
@@ -208,27 +223,41 @@ void test_strings_equal(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
 
   char* buf = malloc(sizeof(char) * 512);
-  read_line(in, buf);
+  // Test first line
+  fgets(buf, 511, in);
   ASSERT(strings_equal(buf, "It is a truth universally acknowledged, that a single man in") == 1);
   ASSERT(strings_equal(buf, "It is ") == 1);
   ASSERT(strings_equal(buf, "I") == 1);
   ASSERT(strings_equal(buf, "t is ") == 0);
   ASSERT(strings_equal(buf, "a") == 0);
-
-  read_line(in, buf);
+  // Test second line
+  fgets(buf, 511, in);
   ASSERT(strings_equal(buf, "possession of a good fortune, must be in want of a wife.") == 1);
   ASSERT(strings_equal(buf, "po") == 1);
   ASSERT(strings_equal(buf, "possession of a ") == 1);
   ASSERT(strings_equal(buf, "ossession of a good fortune, must be in want of a wife.") == 0);
   ASSERT(strings_equal(buf, ".") == 0);
   ASSERT(strings_equal(buf, "") == 1);
-
-  read_line(in, buf);
+  // Test \n line
+  fgets(buf, 511, in);
   ASSERT(strings_equal(buf, "") == 1);
   ASSERT(strings_equal(buf, "  ") == 0);
   ASSERT(strings_equal(buf, "as") == 0);
   ASSERT(strings_equal(buf, ".") == 0);
   ASSERT(strings_equal(buf, " ") == 0);
+
+    // Test end of file line
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  fgets(buf, 511, in);
+  ASSERT(strings_equal(buf, "daughters.") == 1);
+  ASSERT(strings_equal(buf, "") == 1);
+  ASSERT(strings_equal(buf, "daught") == 1);
+  ASSERT(strings_equal(buf, " ") == 0);
+  ASSERT(strings_equal(buf, ".") == 0);
+  ASSERT(strings_equal(buf, "aight") == 0); 
 
   free(buf);
   fclose(in);
@@ -245,6 +274,7 @@ void test_handle_arguments(){
 
 void test_calc_total_occurrences(TestObjs *objs){
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
+
   ASSERT(calc_total_occurrences(in, "a", 4) == 17);
   rewind(in);
   ASSERT(calc_total_occurrences(in, "considered", 4) == 1);
@@ -256,4 +286,38 @@ void test_calc_total_occurrences(TestObjs *objs){
   ASSERT(calc_total_occurrences(in, "considered a", 4) == 1);
   
   fclose(in);
+}
+
+
+void test_read_line_complex(TestObjs *objs) {
+  FILE *in1 = fmemopen((char *) objs->max_length, strlen(objs->max_length), "r");
+  FILE *in2 = fmemopen((char *) objs->longer, strlen(objs->longer), "r");
+
+  char* buf1 = malloc(sizeof(char) * 600);
+  char* buf2 = malloc(sizeof(char) * 600);
+  char* a_max = malloc(sizeof(char) * 600);
+  char* a_more = malloc(sizeof(char) * 600);
+  
+  for (int i = 0; i < MAXLINE; i++) {
+    *(a_max + i) = 'a';
+
+  }
+
+    for (int i = 0; i < MAXLINE + 10; i++) {
+    *(a_more + i) = 'a';
+     
+  }
+
+  read_line(in1, buf1);
+  read_line(in2, buf2);
+
+  ASSERT(strcmp(buf1, a_max) == 0);
+  ASSERT(strcmp(buf2, a_max) == 0);
+  ASSERT(strcmp(buf2, a_more) != 1);
+
+  free(buf1);
+  free(buf2);
+
+  fclose(in1);
+  fclose(in2);
 }

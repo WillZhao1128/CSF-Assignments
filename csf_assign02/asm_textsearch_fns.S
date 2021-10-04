@@ -48,8 +48,8 @@ read_line:
     jl .Lset_return_0
 
 .Lcheck_MAXLINE:
-    cmpw maxline, %r15w         /* c < MAXLINE; if count = 512 and this character is a newline, */
-    jg .Lset_return_1
+    cmpw maxline, %r15w         /* c < MAXLINE; */
+    jge .Lset_return_1
     
     movb %al, (%r13, %r15, 1)   /* buf[count] = c*/
     movq %r14, %rdi             /* %r14 has file pointer, so put back into arg1 register */
