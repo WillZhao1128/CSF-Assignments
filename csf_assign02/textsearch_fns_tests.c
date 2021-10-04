@@ -24,7 +24,6 @@ void cleanup(TestObjs *objs);
 
 // TODO: declare test functions
 
-// Example:
 void test_read_line(TestObjs *objs);
 void test_print_line();
 void test_count_occurrences(TestObjs *objs);
@@ -32,7 +31,7 @@ void test_find_string_length();
 void test_strings_equal(TestObjs *objs);
 void test_handle_arguments();
 void test_calc_total_occurrences(TestObjs *objs);
-void test_read_line_complex(TestObjs *objs);
+void test_read_line_maxline(TestObjs *objs);
 
 int main(int argc, char **argv) {
   // Allow the name of the test function to execute to be specified
@@ -44,7 +43,6 @@ int main(int argc, char **argv) {
   TEST_INIT();
 
   // TODO: invoke test functions
-  
   TEST(test_read_line);
   TEST(test_print_line);
   TEST(test_count_occurrences);
@@ -52,7 +50,7 @@ int main(int argc, char **argv) {
   TEST(test_strings_equal);
   TEST(test_handle_arguments);
   TEST(test_calc_total_occurrences);
-  TEST(test_read_line_complex);
+  TEST(test_read_line_maxline);
 
   TEST_FINI();
 
@@ -73,8 +71,13 @@ TestObjs *setup(void) {
     "considered as the rightful property of some one or other of their\n"
     "daughters.\n";
 
-  objs->max_length = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
-  objs->longer =     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
+  // write two more strings: one with max_length char, and another that's longer than max_length
+  objs->max_length = 
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+    "aaaaa\n";
+  objs->longer =
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+    "aaaaa\n";
 
   return objs;
 }
@@ -83,7 +86,6 @@ void cleanup(TestObjs *objs) {
   free(objs);
 }
 
-// Given
 void test_read_line(TestObjs *objs) {
   // the fmemopen function allows us to treat a character string
   // as an input file
@@ -167,9 +169,8 @@ void test_print_line() {
 
 void test_count_occurrences(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
-
-
   char* buf = malloc(sizeof(char) * 512); // 511 chararacters + 1 for /0
+
   // Test first line
   fgets(buf, 511, in);
   ASSERT(count_occurrences(buf, "a") == 6);
@@ -221,8 +222,8 @@ void test_find_string_length() {
 
 void test_strings_equal(TestObjs *objs) {
   FILE *in = fmemopen((char *) objs->pandp, strlen(objs->pandp), "r");
-
   char* buf = malloc(sizeof(char) * 512);
+
   // Test first line
   fgets(buf, 511, in);
   ASSERT(strings_equal(buf, "It is a truth universally acknowledged, that a single man in") == 1);
@@ -288,25 +289,28 @@ void test_calc_total_occurrences(TestObjs *objs){
   fclose(in);
 }
 
-
-void test_read_line_complex(TestObjs *objs) {
+// read_line max line length test
+void test_read_line_maxline(TestObjs *objs) {
   FILE *in1 = fmemopen((char *) objs->max_length, strlen(objs->max_length), "r");
   FILE *in2 = fmemopen((char *) objs->longer, strlen(objs->longer), "r");
 
   char* buf1 = malloc(sizeof(char) * 600);
   char* buf2 = malloc(sizeof(char) * 600);
-  char* a_max = malloc(sizeof(char) * 600);
-  char* a_more = malloc(sizeof(char) * 600);
+  char a_max[600];
+  char a_more[600];
   
+  // Create string with 511 a's
   for (int i = 0; i < MAXLINE; i++) {
-    *(a_max + i) = 'a';
-
+    a_max[i] = 'a';
   }
+  a_max[MAXLINE] = '\0';
 
-    for (int i = 0; i < MAXLINE + 10; i++) {
-    *(a_more + i) = 'a';
-     
+  // Create string with 521 a's
+  for (int i = 0; i < MAXLINE + 10; i++) {
+    a_more[i] = 'a';
   }
+  a_more[MAXLINE + 10] = '\0';
+  
 
   read_line(in1, buf1);
   read_line(in2, buf2);

@@ -12,8 +12,6 @@
 .section .data
 maxline: .value 511
 
-.section .bss
-
 .section .text
     .globl read_line
     .globl print_line
@@ -23,9 +21,8 @@ maxline: .value 511
     .globl handle_arguments
     .globl calc_total_occurrences
     
-	
 read_line:
-    subq $8, %rsp           /* Align the stack pointer*/
+    subq $8, %rsp               /* Align the stack pointer*/
 
     /* Save callee-saved register values*/
     pushq %r13                  /* buffer pointer */
@@ -33,7 +30,7 @@ read_line:
     pushq %r15                  /* count */
     subq $8, %rsp
 
-    movq $0, %r15              /* count = 0; w b/c max val is 512, which is 9 bits*/
+    movq $0, %r15               /* count = 0 */
     movq %rdi, %r14             /* %r14 has file pointer */
     movq %rsi, %r13             /* %r13 = buf */
     
@@ -41,7 +38,7 @@ read_line:
     
 	
 .Lcheck_end_of_line:
-    cmpb $10, %al               /* c != '\n'; b because working with characters */
+    cmpb $10, %al               /* c != '\n' */
     je .Lset_return_1
 
 .Lcheck_EOF:
@@ -49,33 +46,33 @@ read_line:
     jl .Lset_return_0
 
 .Lcheck_MAXLINE:
-    cmpq $511, %r15         /* count < MAXLINE; */
+    cmpw $511, %r15w             /* count < MAXLINE; */
     jge .Lset_return_1
     
-    movb %al, (%r13, %r15, 1)   /* buf[count] = c*/
-    movq %r14, %rdi             /* %r14 has file pointer, so put back into arg1 register */
+    movb %al, (%r13, %r15, 1)    /* buf[count] = c*/
+    movq %r14, %rdi              /* %r14 has file pointer, so put back into arg1 register */
     call fgetc
     
-    incq %r15                  /* count++ */
-    cmpq $511, %r15
+    incw %r15w                   /* count++ */
+    cmpw $511, %r15w             /* if count == 511, then must find next line*/ 
     je .Lget_next_line
     jmp .Lcheck_end_of_line
 
 .Lset_return_0:
-    movq $0, %rax               /* set return value to 0 */
+    movq $0, %rax                /* set return value to 0 */
     jmp .Lloop_end
 
 .Lset_return_1:
-    movq $1, %rax               /* set return value to 1 */
+    movq $1, %rax                /* set return value to 1 */
     jmp .Lloop_end
 
 .Lget_next_line:
-    cmpb $10, %al
+    cmpb $10, %al                /* c != \n */
     je .Lcheck_end_of_line
-    cmpb $0, %al
+    cmpb $0, %al                 /* c != EOF */
     jl .Lcheck_end_of_line
-    movq %r14, %rdi             /* %r14 has file pointer, so put back into arg1 register */
-    call fgetc
+    movq %r14, %rdi              /* %r14 has file pointer, so put back into arg1 register */
+    call fgetc                   /* continue calling until gets next line or EOF*/
     jmp .Lget_next_line
 
 
@@ -92,7 +89,7 @@ read_line:
 /* -------------------------------------------------------------------------- */
 
 print_line:
-    subq $8, %rsp               /* Align the stack pointer*/
+    subq $8, %rsp                /* Align the stack pointer*/
 
     /* Save callee-saved register values*/
     pushq %r12                   /* length */
@@ -262,9 +259,9 @@ handle_arguments:
 	movq $inv_inp, %rsi             /* pass "Invalid Input" */
     call fprintf
     movl $0, %eax
+    movq $1, %rdi
     call exit
     
-
 .Largc_is_three:
     movl $2, %eax
     jmp .Lhandle_arguments_end
@@ -306,12 +303,10 @@ calc_total_occurrences:
     call read_line                      /* flag = read_line(fileptr, buf)*/
     pushq %rax                          /* save flag value (pushing %al messing things up)*/
 
-
     movq %rbp, %rdi              
     movq %r13, %rsi
     
     call count_occurrences              /* flag = read_line(fileptr, buf)*/
-    
     addq %rax, %r15                     /* tot_occurrences += count_occurrences(buf, search)*/
 
     cmpl $3, %r14d                       /* if argc == 3 */

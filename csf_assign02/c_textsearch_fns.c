@@ -100,7 +100,6 @@ int strings_equal(const char *s1, const char *s2) {
 }
 
 int handle_arguments(int argc) {
-	
   if (argc == 3) {
     return 2;    
   } else if (argc == 4) {
@@ -122,7 +121,7 @@ int calc_total_occurrences(FILE* fileptr, char* search, int argc) {
     flag = read_line(fileptr, buf);
     num_occurrences = count_occurrences(buf, search);
     tot_occurrences += num_occurrences;
-    if (argc == 3 && num_occurrences > 0) {
+    if (argc == 3 && num_occurrences > 0) { // print result if -c not specified
       fprintf(stdout, buf);
       fprintf(stdout, "\n");
     }
