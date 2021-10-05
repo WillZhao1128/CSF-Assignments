@@ -21,7 +21,6 @@ line_in_file: .space (1 * 511)
 	.globl main
 main:
 	/* TODO: implement the main function */
-	
 	subq $8, %rsp 						/* Align the stack pointer */
 	pushq %r12   						/* file_ind */
 	pushq %r13   						/* arg c*/

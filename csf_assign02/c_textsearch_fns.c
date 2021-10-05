@@ -1,5 +1,5 @@
 /*
- * Implrementation of functions declared in textsearch_fns.h for finding # occurrences
+ * C implrementation of functions declared in textsearch_fns.h for finding # occurrences
  * CSF Assignment 2
  * Aidan Aug, Will Zhao
  * aaug1@jhu.edu, wzhao33@jhu.edu
