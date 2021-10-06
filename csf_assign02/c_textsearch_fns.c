@@ -117,7 +117,7 @@ int calc_total_occurrences(FILE* fileptr, char* search, int argc) {
   int tot_occurrences = 0;
   int num_occurrences = 0;
   while (flag) {
-    char* buf = malloc(sizeof(char) * 512);
+    char buf[512];
     flag = read_line(fileptr, buf);
     num_occurrences = count_occurrences(buf, search);
     tot_occurrences += num_occurrences;
@@ -125,7 +125,6 @@ int calc_total_occurrences(FILE* fileptr, char* search, int argc) {
       fprintf(stdout, buf);
       fprintf(stdout, "\n");
     }
-	free(buf);
   }
 
   return tot_occurrences;

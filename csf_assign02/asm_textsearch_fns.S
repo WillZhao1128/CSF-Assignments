@@ -294,7 +294,7 @@ calc_total_occurrences:
     je .Lcalc_tot_occ_loop_end
     pushq %rbp                          /* save callee-saved register */
     subq $512, %rsp                     /* allocate 512 bits for buffer */
-    movq %rsp, %rbp                     /* char* buf = malloc(sizeof(char) * 512) */
+    movq %rsp, %rbp                     /* update %rbp to point to allocated memory */
     
     movq %r12, %rdi             
     movq %rbp, %rsi
