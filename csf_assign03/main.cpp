@@ -15,8 +15,6 @@ using std::string;
 
 
 int main(int argc, char *argv[]) {
-    assert(argc > 1);
-    cout << argc << endl;
     if (argc != 7) {
         cerr << "Invalid number of arguments!" << endl;
         exit(1);
