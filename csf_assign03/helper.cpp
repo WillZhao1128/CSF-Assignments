@@ -55,9 +55,6 @@ bool handle_string_arguments(char* argv[]) {
     } else if (strcmp(argv[4], "no-write-allocate") == 0 && strcmp(argv[5], "write-back") == 0) {
         cout << "no-write-allocate cannot be used with write-back!" << endl;
         return 0;
-    } else if (strcmp(argv[6], "<")) {
-        cout << "Use < before .trace file!" << endl;
-        return 0;
     }
     return 1;
 }
