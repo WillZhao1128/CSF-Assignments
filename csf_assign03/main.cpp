@@ -1,11 +1,15 @@
+/*
+ * Main function implementation for cache simulator
+ * CSF Assignment 3
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
 #include "helper.h"
 #include <iostream>
-#include <stdlib.h>
-#include <ctype.h>
-#include <cassert>
-#include <string.h>
-#include <fstream>
-#include <string>
+#include <cstring>
+#include <cstdlib>
+#include <cmath>
 
 using std::cout;
 using std::endl;
@@ -19,7 +23,7 @@ int main(int argc, char *argv[]) {
         cerr << "Invalid number of arguments!" << endl;
         exit(1);
     }
-    if (handle_number_arguments(argv) == 0 || handle_string_arguments(argv) == 0) {
+    if (handle_all_arguments(argv) == 0) {
         cerr << "Invalid argument!" << endl;
         exit(1);
     }
@@ -27,7 +31,6 @@ int main(int argc, char *argv[]) {
     while (std::getline(std::cin, s)){
         cout << s << endl;
     }
-    
     
     cout << "hello " << argv[1] << "!" << endl;
     return 0;
