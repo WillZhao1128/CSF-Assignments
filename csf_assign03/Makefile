@@ -10,11 +10,13 @@ EXES = csim
 all : $(EXES)
 
 # targets for executables
-csim: main.o
-	$(CC) -o $@ main.o
+csim: main.o helper.o
+	$(CC) -o $@ main.o helper.o
 
 # targets for object files
 main.o: main.cpp
+
+helper.o: helper.cpp helper.h
 
 clean:
 	rm -f *.o csim
