@@ -8,6 +8,8 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include <string>
+
 /*
  * Determines if the passed string is a number that works for any
  * of the first three arguments
@@ -58,5 +60,17 @@ bool handle_number_arguments(char* argv[]);
  *   1 if the last three command-line arguments are valid (i.e., match one of the expected string inputs)
  */
 bool handle_string_arguments(char*argv[]);
+
+
+/*
+ * Determines if the loaded string is a valid trace
+ *
+ * Parameters:
+ *   s - string read in from stdin
+ *
+ * Returns:
+ *   N/A
+ */
+void check_valid_trace(std::string s);
 
 #endif

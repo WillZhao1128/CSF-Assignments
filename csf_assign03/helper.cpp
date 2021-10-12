@@ -15,6 +15,7 @@ using std::cout;
 using std::endl;
 using std::cerr;
 using std::isdigit;
+using std::string;
 
 bool is_valid_number(char* arg) {
     for (int i = 0; i < strlen(arg); i++) {
@@ -74,3 +75,25 @@ bool handle_string_arguments(char* argv[]) {
     }
     return 1;
 }
+
+
+void check_valid_trace(string s) {
+    if (s[0] != 'l' && s[0] != 's' && s[1] != ' ') {
+        cerr << "Invalid trace!" << endl;
+        exit(1);
+    }
+    string address = s.substr(2, 10);
+    if (address.substr(0, 2) != "0x") {
+        cerr << "Address must be in hex!1" << endl;
+        exit(1);
+    }
+    int num_byte = 8; // 32 bit address
+    for (int i = 2; i < num_byte + 2; i++) {
+        if (!isxdigit(address[i])) {
+            cerr << "Address must be in hex!" << endl;
+            exit(1);
+        }
+    
+    }
+}
+
