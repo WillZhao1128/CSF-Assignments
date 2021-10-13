@@ -97,3 +97,9 @@ void check_valid_trace(string s) {
     }
 }
 
+uint32_t get_bits(uint32_t num_bits, uint32_t left, uint32_t address) {
+    uint32_t mask = 1;
+    mask = (((mask << num_bits) - 1) << left); // Mask with 1's in desired location
+    uint32_t val = (address & mask) >> left;
+    return val;
+}

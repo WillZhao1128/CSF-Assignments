@@ -73,4 +73,17 @@ bool handle_string_arguments(char*argv[]);
  */
 void check_valid_trace(std::string s);
 
+/*
+ * Gets the bits associated with one of the 3 components in address
+ *
+ * Parameters:
+ *   num_bits - number of bits in address component
+ *   left - the starting point in the 32 bit address for the component
+ *   address - the 32 bit address
+ *
+ * Returns:
+ *   the bits associated with a specific component in an address
+ */
+uint32_t get_bits(uint32_t num_bits, uint32_t left, uint32_t address);
+
 #endif
