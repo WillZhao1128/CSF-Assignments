@@ -86,4 +86,16 @@ void check_valid_trace(std::string s);
  */
 uint32_t get_bits(uint32_t num_bits, uint32_t left, uint32_t address);
 
+/*
+ * Prints the diagnostic data of the cache on provided memory access trace
+ *
+ * Parameters:
+ *   output - an array containing all of the relevant diagnostic data
+ *   len - the length of the output array (should generaly be len = 7)
+ *
+ * Returns:
+ *   N/A
+ */
+void print_output(int output[], int len);
+
 #endif

@@ -22,7 +22,6 @@ using std::string;
 using std::stoi;
 
 bool check_hit();
-void print_output(int output[], int len) ;
 
 int main(int argc, char *argv[]) {
     // If the argument count is greater than 7, then it is invalid
@@ -49,7 +48,9 @@ int main(int argc, char *argv[]) {
         // Analyze memory address (get bits for each component)
         check_valid_trace(s);
         string s_addr = s.substr(4, 8);
-        uint32_t int_addr = stoi(s_addr, nullptr, 16);
+        //cout << s_addr << endl;
+        uint32_t int_addr = stoul(s_addr, nullptr, 16);
+        //cout << "hi" << endl;
         uint32_t offset = get_bits(offset_size_bits, 0, int_addr);// DOESN'T MATTER
         uint32_t index = get_bits(index_size_bits, offset_size_bits, int_addr);
 
@@ -62,9 +63,9 @@ int main(int argc, char *argv[]) {
         }
 
 
-        cout << offset << endl;
-        cout << index << endl;
-        cout << s << endl;
+        //cout << offset << endl;
+        //cout << index << endl;
+        //cout << s << endl;
         output[6] = output[6] + 1;
     }
     
@@ -78,12 +79,3 @@ bool check_hit() {
     return 0;
 }
 
-void print_output(int output[], int len) {
-    cout << "Total loads: " << output[0] << endl;
-    cout << "Total stores: " << output[1] << endl;
-    cout << "Load hits: " << "" << endl;
-    cout << "Load misses: " << "" << endl;
-    cout << "Store hits: " << "" << endl;
-    cout << "store misses: " << "" << endl;
-    cout << "Total cycles: " << output[6] << endl;
-}

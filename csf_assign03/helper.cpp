@@ -103,3 +103,17 @@ uint32_t get_bits(uint32_t num_bits, uint32_t left, uint32_t address) {
     uint32_t val = (address & mask) >> left;
     return val;
 }
+
+void print_output(int output[], int len) {
+    if (len != 7) {
+        cerr << "print_output is meant for diagnostic data for cache!" << endl;
+        exit(2);
+    }
+    cout << "Total loads: " << output[0] << endl;
+    cout << "Total stores: " << output[1] << endl;
+    cout << "Load hits: " << "" << endl;
+    cout << "Load misses: " << "" << endl;
+    cout << "Store hits: " << "" << endl;
+    cout << "store misses: " << "" << endl;
+    cout << "Total cycles: " << output[6] << endl;
+}
