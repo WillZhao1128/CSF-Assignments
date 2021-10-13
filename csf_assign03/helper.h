@@ -84,7 +84,7 @@ void check_valid_trace(std::string s);
  * Returns:
  *   the bits associated with a specific component in an address
  */
-uint32_t get_bits(uint32_t num_bits, uint32_t left, uint32_t address);
+uint32_t get_bits(uint32_t num_bits, uint32_t right, uint32_t address);
 
 /*
  * Prints the diagnostic data of the cache on provided memory access trace

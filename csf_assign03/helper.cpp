@@ -97,10 +97,10 @@ void check_valid_trace(string s) {
     }
 }
 
-uint32_t get_bits(uint32_t num_bits, uint32_t left, uint32_t address) {
+uint32_t get_bits(uint32_t num_bits, uint32_t right, uint32_t address) {
     uint32_t mask = 1;
-    mask = (((mask << num_bits) - 1) << left); // Mask with 1's in desired location
-    uint32_t val = (address & mask) >> left;
+    mask = (((mask << num_bits) - 1) << right); // Mask with 1's in desired location
+    uint32_t val = (address & mask) >> right;
     return val;
 }
 
@@ -111,9 +111,9 @@ void print_output(int output[], int len) {
     }
     cout << "Total loads: " << output[0] << endl;
     cout << "Total stores: " << output[1] << endl;
-    cout << "Load hits: " << "" << endl;
-    cout << "Load misses: " << "" << endl;
-    cout << "Store hits: " << "" << endl;
-    cout << "store misses: " << "" << endl;
+    cout << "Load hits: " << output[2] << endl;
+    cout << "Load misses: " << output[3] << endl;
+    cout << "Store hits: " << output[4] << endl;
+    cout << "store misses: " << output[5] << endl;
     cout << "Total cycles: " << output[6] << endl;
 }
