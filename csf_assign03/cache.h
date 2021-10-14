@@ -66,82 +66,18 @@ public:
     // determines to write-allocate or no-write allocate
     uint32_t write_allocate(char* wa, int index, uint32_t tag);
 
-    uint32_t store(uint32_t tag, char* wa, char* wt, char* lru) {
-        int index = find_block(tag);
-        uint32_t cycles = 0;
-        // Cache hit
-        if (index > 0) {
-            cycles = write_through(wt, index, tag);
-            Block block = blocks[index];
-            blocks.erase(blocks.begin() + index);
-            blocks.push_back(block);
-            return cycles;
+    // decides what to do in event of store (hit or miss)
+    uint32_t write_through(char* wt, int index, uint32_t tag);
 
-        } else { // Cache miss!
-            evict(lru, tag);
-            index = (blocks.size() - 1);
-            cycles = write_allocate(wa, index, tag);
-            cycles = cycles + write_through(wt, index, tag);
-            return cycles;
-        }
-    }
+    // Handles all stores
+    uint32_t store(uint32_t tag, char* wa, char* wt, char* lru);
 
-    uint32_t load(uint32_t tag, char*lru) {
-        int index = find_block(tag);
-        uint32_t cycles = 0;
-        // Cache hit!
-        if (index > 0) {
-            Block block = blocks[index];
-            blocks.erase(blocks.begin() + index);
-            blocks.push_back(block);
-            return 1;
-        } else { // Cache miss! Have to get from main
-            cycles = evict(lru, tag);
-            cycles = cycles + 100;
-            return cycles;
-        }       
-    }
+    uint32_t load(uint32_t tag, char*lru);
 
-    // decides to evict and returns index of the new one
-    uint32_t evict(char* evict_option, uint32_t tag) {
-        // If not full, just pushback
-        uint32_t cycles = 0;
-        if (blocks.size() != size) {
-            Block block(tag);
-            blocks.push_back(block);
-            return cycles;
+    void lru_rearrange(int index);
 
-        } else { // size is full! have to evict
-            if (strcmp(evict_option, "lru")) {
-                if (blocks[0].is_dirty()) {
-                    cycles = 100;
-                }
-                blocks.erase(blocks.begin());
-                return cycles;
-            } else {
-                return 0;
-            }
-        }
-
-    }
-
-    uint32_t write_through(char* wt, int index, uint32_t tag) {
-        // if write-through is true, then we have to access both the cache and main memory
-        if (strcmp(wt, "write-through")) {
-            blocks[index].set_tag(tag);
-            return 101;
-        } else {
-            blocks[index].set_dirty();
-            return 1;
-        }
-    }
-
-
-/*
-    uint32_t calc_total_cycles(char* wa, char* wt, char* lfu) {
-        uint32_t write_alloc = write_allocate(wa,)
-    }
-*/
+    // decides to evict or not; 
+    uint32_t evict(uint32_t tag);
 
 private:
     vector<Block> blocks;
@@ -158,36 +94,30 @@ public:
     // Creates a cache with specifications
     Cache(char* arg1);
 
-    Set get_set(int index) {
-        return sets[index];
-    }
+    // Getter for a specific set
+    Set get_set(int index) { return sets[index]; }
 
-    void set_set(int index, Set set) {
-        sets[index] = set;
-    }
+    // Setter for a specific set
+    void set_set(int index, Set set) { sets[index] = set; }
 
-    void create_set(Set set) {
-        sets.push_back(set);
-    }
+    // returns how many sets this cache has
+    uint32_t num_sets() { return sets.size(); }
 
-    uint32_t num_sets() {
-        return sets.size();
-    }
-
+    // finds the block in a specified set
     bool find_block(uint32_t tag, uint32_t index);
 
+    // performs store operation on a specific set
     uint32_t store(uint32_t tag, uint32_t index, char* wa, char* wt, char* lru) {
         return sets[index].store(tag, wa, wt, lru);
-
     }
 
+    // performs a load operation on a specific set
     uint32_t load(uint32_t tag, uint32_t index, char* lru) {
         return sets[index].load(tag, lru);
     }
 
 private:
     vector<Set> sets;
-
 };
 
 

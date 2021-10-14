@@ -55,14 +55,14 @@ int main(int argc, char *argv[]) {
         uint32_t index = get_bits(index_bits_size, offset_bits_size, int_addr);
         uint32_t tag = get_bits(tag_bits_size, index_bits_size + offset_bits_size, int_addr);
 
-        cout << "index is " << index << endl;
-        cout << "tag is " << tag << endl;
+        //cout << "index is " << index << endl;
+        //cout << "tag is " << tag << endl;
         uint32_t cycles = 0;
         if (s[0] == 'l') { // is a load
             output[0] = output[0] + 1;
+            //cout << cache.find_block(tag, index) << endl;
             if (cache.find_block(tag, index) == 1) {
                 output[2] = output[2] + 1;
-                
             } else {
                 output[3] = output[3] + 1;
             }
