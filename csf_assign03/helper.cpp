@@ -18,7 +18,8 @@ using std::isdigit;
 using std::string;
 
 bool is_valid_number(char* arg) {
-    for (int i = 0; i < strlen(arg); i++) {
+    int num_len = strlen(arg);
+    for (int i = 0; i < num_len; i++) {
         if (!isdigit(arg[i])) {
             cerr << "Not a number!" << endl;
             return 0;
