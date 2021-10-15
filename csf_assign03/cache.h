@@ -1,3 +1,10 @@
+/*
+ * Declaration of class functions for the cache object
+ * CSF Assignment 3
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
 #ifndef CACHE_H 
 #define CACHE_H
 
@@ -76,7 +83,7 @@ public:
     uint32_t write_allocate(char* wa, int index, uint32_t tag, uint32_t block_size);
 
     // decides what to do in event of store (hit or miss)
-    uint32_t write_through(char* wt, int index, uint32_t tag);
+    uint32_t write_through(char* wt, int index, uint32_t tag, uint32_t block_size);
 
     // Handles all stores
     uint32_t store(uint32_t tag, char* wa, char* wt, char* lru, uint32_t block_size);
