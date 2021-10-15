@@ -10,8 +10,8 @@ EXES = csim
 all : $(EXES)
 
 # targets for executables
-csim: main.o helper.o cache.o
-	$(CC) $(CFLAGS) -o $@ main.o helper.o cache.o
+csim: main.o helper.o cache.o set.o
+	$(CC) $(CFLAGS) -o $@ main.o helper.o cache.o set.o
 
 # targets for object files
 main.o: main.cpp
@@ -19,6 +19,8 @@ main.o: main.cpp
 helper.o: helper.cpp helper.h
 
 cache.o: cache.h cache.cpp
+
+set.o: set.h set.cpp block.h
 
 clean:
 	rm -f *.o csim

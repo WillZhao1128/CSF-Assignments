@@ -8,99 +8,10 @@
 #ifndef CACHE_H 
 #define CACHE_H
 
+#include "set.h"
 #include <vector>
-#include <cstring>
-#include <cctype>
-#include <iostream>
-#include <cstring>
-#include <cstdlib>
-#include <cmath>
-#include <list>
-#include <map>
 
 using std::vector;
-using std::list;
-using std::map;
-
-class Block {
-public:
-    Block() {}
-
-    Block(uint32_t tag_add){
-        this->tag = tag_add;
-        this->dirty = 0;
-    }
-
-    Block(const Block& b) : tag(b.tag), dirty(b.dirty) {}
-
-    Block& operator=(const Block& b) {
-        tag = b.tag;
-        dirty = b.dirty;
-        return *this;
-    }
-
-    uint32_t get_tag() { return this->tag; }
-
-    void set_tag(uint32_t tag) {
-        this->tag = tag;
-    }
-
-    void set_dirty() { this->dirty = 1; }
-
-    bool is_dirty() {
-        return dirty;
-    }
-
-private:
-    uint32_t tag;
-    bool dirty;
-};
-
-class Set {
-public:
-    Set() {}
-
-    // getter for a specific block
-    Block get_block(int index) { return blocks[index]; }
-
-    // setter for a specfici block
-    void set_block(int index, Block block) { blocks[index] = block; }
-
-    // called when creating the cache DELETE
-    void create_block(Block block) { blocks.push_back(block); }
-
-    void set_size(uint32_t size) {
-        this->size = size;
-    }
-
-    // returns the number of blocks in set
-    uint32_t num_blocks() { return blocks.size(); }
-
-    // finds a block with a specific tag. returns -1 if not found.
-    int find_block(uint32_t tag);
-
-    // determines to write-allocate or no-write allocate
-    uint32_t write_allocate(char* wa, int index, uint32_t tag, uint32_t block_size);
-
-    // decides what to do in event of store (hit or miss)
-    uint32_t write_through(char* wt, int index, uint32_t tag, uint32_t block_size);
-
-    // Handles all stores
-    uint32_t store(uint32_t tag, char* wa, char* wt, char* lru, uint32_t block_size);
-
-    uint32_t load(uint32_t tag, char*lru, uint32_t block_size);
-
-    void lru_rearrange(int index);
-
-    // decides to evict or not; 
-    uint32_t evict(uint32_t tag, uint32_t block_size);
-
-private:
-    vector<Block> blocks;
-    uint32_t size;
-
-}; 
-
 
 class Cache { // Has a sequence of set objects;
 
@@ -124,13 +35,15 @@ public:
 
     // performs store operation on a specific set
     uint32_t store(uint32_t tag, uint32_t index, char* wa, char* wt, char* lru) {
-        return sets[index].store(tag, wa, wt, lru, block_size);
+        return sets[index].store(tag, wa, wt, lru);
     }
 
     // performs a load operation on a specific set
     uint32_t load(uint32_t tag, uint32_t index, char* lru) {
-        return sets[index].load(tag, lru, block_size);
+        return sets[index].load(tag, lru);
     }
+
+    uint32_t store_all_dirty();
 
 private:
     vector<Set> sets;

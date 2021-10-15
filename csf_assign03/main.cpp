@@ -78,8 +78,9 @@ int main(int argc, char *argv[]) {
         }
         output[6] = output[6] + cycles;
     }
+    output[6] = output[6] + cache.store_all_dirty();
     
     print_output(output, 7);
-
+    
     return 0;
 }
