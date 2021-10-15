@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     cout << "index bit size is " << index_bits_size << endl;
     cout << "tag bit size is " << tag_bits_size << endl;
 
-    Cache cache(argv[1]);
+    Cache cache(argv[1], argv[2], argv[3]);
     string s;
     int output[7] = {0};
     while (std::getline(std::cin, s)){ // Read a line in trace file (\n terminated)
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
                 output[3] = output[3] + 1;
             }
             cycles = cache.load(tag, index, argv[6]);
-        } else {
+        } else if (s[0] == 's') {
             output[1] = output[1] + 1;
             if (cache.find_block(tag, index) == 1) {
                 output[4] = output[4] + 1;            

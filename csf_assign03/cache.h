@@ -17,17 +17,24 @@ using std::map;
 
 class Block {
 public:
+    Block() {}
 
     Block(uint32_t tag_add){
         this->tag = tag_add;
         this->dirty = 0;
-        this->valid = 0;
+    }
+
+    Block(const Block& b) : tag(b.tag), dirty(b.dirty) {}
+
+    Block& operator=(const Block& b) {
+        tag = b.tag;
+        dirty = b.dirty;
+        return *this;
     }
 
     uint32_t get_tag() { return this->tag; }
 
     void set_tag(uint32_t tag) {
-        this->valid = 1;
         this->tag = tag;
     }
 
@@ -40,8 +47,6 @@ public:
 private:
     uint32_t tag;
     bool dirty;
-    bool valid;
-
 };
 
 class Set {
@@ -57,6 +62,10 @@ public:
     // called when creating the cache DELETE
     void create_block(Block block) { blocks.push_back(block); }
 
+    void set_size(uint32_t size) {
+        this->size = size;
+    }
+
     // returns the number of blocks in set
     uint32_t num_blocks() { return blocks.size(); }
 
@@ -64,20 +73,20 @@ public:
     int find_block(uint32_t tag);
 
     // determines to write-allocate or no-write allocate
-    uint32_t write_allocate(char* wa, int index, uint32_t tag);
+    uint32_t write_allocate(char* wa, int index, uint32_t tag, uint32_t block_size);
 
     // decides what to do in event of store (hit or miss)
     uint32_t write_through(char* wt, int index, uint32_t tag);
 
     // Handles all stores
-    uint32_t store(uint32_t tag, char* wa, char* wt, char* lru);
+    uint32_t store(uint32_t tag, char* wa, char* wt, char* lru, uint32_t block_size);
 
-    uint32_t load(uint32_t tag, char*lru);
+    uint32_t load(uint32_t tag, char*lru, uint32_t block_size);
 
     void lru_rearrange(int index);
 
     // decides to evict or not; 
-    uint32_t evict(uint32_t tag);
+    uint32_t evict(uint32_t tag, uint32_t block_size);
 
 private:
     vector<Block> blocks;
@@ -92,7 +101,7 @@ public:
     Cache() {}
     
     // Creates a cache with specifications
-    Cache(char* arg1);
+    Cache(char* arg1, char* arg2, char* arg3);
 
     // Getter for a specific set
     Set get_set(int index) { return sets[index]; }
@@ -108,16 +117,17 @@ public:
 
     // performs store operation on a specific set
     uint32_t store(uint32_t tag, uint32_t index, char* wa, char* wt, char* lru) {
-        return sets[index].store(tag, wa, wt, lru);
+        return sets[index].store(tag, wa, wt, lru, block_size);
     }
 
     // performs a load operation on a specific set
     uint32_t load(uint32_t tag, uint32_t index, char* lru) {
-        return sets[index].load(tag, lru);
+        return sets[index].load(tag, lru, block_size);
     }
 
 private:
     vector<Set> sets;
+    uint32_t block_size;
 };
 
 
