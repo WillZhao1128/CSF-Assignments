@@ -30,6 +30,9 @@ public:
     // returns how many sets this cache has
     uint32_t num_sets() { return sets.size(); }
 
+    // returns the total size in bits of this cache
+    uint32_t num_sets_bits() { return size; }
+
     // finds the block in a specified set
     bool find_block(uint32_t tag, uint32_t index);
 
@@ -47,6 +50,7 @@ public:
 
 private:
     vector<Set> sets;
+    uint32_t size;
     uint32_t block_size;
 };
 

@@ -96,12 +96,12 @@ public:
      * 
      * Parameters: 
      *    wt = string that's either "write-through" or "write-back"
-     *    index = the location of the block
+     *    tag = the address of the block to be written to
      *    
      * Returns: 
      *    The number of cycles from accessing memory (cache or main)
      */
-    uint32_t write_through(char* wt, int index);
+    uint32_t write_through(char* wt, uint32_t tag);
 
     /*
      * Decides what to do in case of a store (hit or miss)

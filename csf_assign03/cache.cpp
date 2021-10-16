@@ -10,6 +10,7 @@
 #include <cstring>
 #include <string>
 #include <cmath>
+#include <iostream>
 
 using std::string;
 using std::stoi;
@@ -26,12 +27,13 @@ Cache::Cache(char* arg1, char* arg2, char* arg3) {
     uint32_t sets_per_cache = stoi(arg1, nullptr, 10); 
     uint32_t blocks_per_set = stoi(arg2, nullptr, 10); 
     uint32_t bytes_per_block = stoi(arg3, nullptr, 10);
-    block_size = log2(bytes_per_block);
+    block_size = (bytes_per_block) / 4;
     
     for (uint32_t i = 0; i < sets_per_cache; i++) {
         Set set(blocks_per_set, block_size);
         sets.push_back(set);
     }
+    size = sets_per_cache * bytes_per_block * blocks_per_set;
 }
 
 uint32_t Cache::store_all_dirty() {
