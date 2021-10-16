@@ -25,8 +25,7 @@ int Set::find_block(uint32_t tag) {
 uint32_t Set::write_allocate(char* wa, uint32_t tag) {
     // If write-allocate is true, then first have to bring this into main memory
     if (strcmp(wa, "write-allocate") == 0) {
-        check_cache(tag);
-        return MAIN_MEM_CYCLES * block_size;
+        return check_cache(tag);
     } else if (strcmp(wa, "no-write-allocate") == 0){
         return 0;
     } else {
