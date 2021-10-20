@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
     uint32_t index_bits_size = log2(stoi(argv[1], nullptr, 10));
     uint32_t tag_bits_size = total_addr_bits - index_bits_size - offset_bits_size;
 
-    cout << "offset bit size is " << offset_bits_size << endl;
-    cout << "index bit size is " << index_bits_size << endl;
-    cout << "tag bit size is " << tag_bits_size << endl;
+    //cout << "offset bit size is " << offset_bits_size << endl;
+    //cout << "index bit size is " << index_bits_size << endl;
+    //cout << "tag bit size is " << tag_bits_size << endl;
 
     Cache cache(argv[1], argv[2], argv[3]);
     string s;
