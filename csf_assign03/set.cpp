@@ -40,9 +40,9 @@ uint32_t Set::write_through(char* wt, uint32_t tag) {
     // if write-through is true, then we have to access both the cache and main memory
     if (strcmp(wt, "write-through") == 0) {
         if (index < 0) { //block is not in cache
-            return MAIN_MEM_CYCLES * block_size;
+            return MAIN_MEM_CYCLES;
         } else { // block is in cache, so have to write to both locations
-            return MAIN_MEM_CYCLES * block_size + CACHE_CYCLES;
+            return MAIN_MEM_CYCLES + CACHE_CYCLES;
         }
     } else if (strcmp(wt, "write-back") == 0) { // if write-back, then simply mark that block as dirty; if we access the same block + replace, will also have to mark as dirty
         if (index < 0) { // block is not in cache; makes no sense for this to ever happen
