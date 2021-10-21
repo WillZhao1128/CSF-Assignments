@@ -1,4 +1,3 @@
-
 /*
  * Declaration of class functions for the cache object
  * CSF Assignment 3
@@ -147,8 +146,15 @@ public:
      * 
      * Returns: None
      */
-    uint32_t check_cache(uint32_t tag);
+    uint32_t update_cache(uint32_t tag);
 
+    /*
+     * Extra functionality: stores all dirty blocks too
+     * 
+     * Parameters: None
+     * 
+     * Returns: None
+     */
     uint32_t store_all_dirty();
 
 private:

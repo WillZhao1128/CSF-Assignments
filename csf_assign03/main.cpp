@@ -32,42 +32,31 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     uint32_t total_addr_bits = 32;
-    
-    //uint32_t blocks_per_set = stoi(argv[2], nullptr, 10); // for DM: 1 set = 1 block, AM: 1 set = n block
-
     uint32_t offset_bits_size = log2(stoi(argv[3], nullptr, 10));
     uint32_t index_bits_size = log2(stoi(argv[1], nullptr, 10));
     uint32_t tag_bits_size = total_addr_bits - index_bits_size - offset_bits_size;
 
-    //cout << "offset bit size is " << offset_bits_size << endl;
-    //cout << "index bit size is " << index_bits_size << endl;
-    //cout << "tag bit size is " << tag_bits_size << endl;
-
     Cache cache(argv[1], argv[2], argv[3]);
     string s;
     int output[7] = {0};
-    while (std::getline(std::cin, s)){ // Read a line in trace file (\n terminated)
-        // Analyze memory address (get bits for each component)
-        check_valid_trace(s);
+    while (std::getline(std::cin, s)){                          // Read a line in trace file (\n terminated)
+        check_valid_trace(s);                                   // make sure the trace is valud
 
         string s_addr = s.substr(4, 8);                         // get the address from the string
         uint32_t int_addr = stoul(s_addr, nullptr, 16);         // convert hex string into decimal
         uint32_t index = get_bits(index_bits_size, offset_bits_size, int_addr);
         uint32_t tag = get_bits(tag_bits_size, index_bits_size + offset_bits_size, int_addr);
 
-        //cout << "index is " << index << endl;
-        //cout << "tag is " << tag << endl;
         uint32_t cycles = 0;
-        if (s[0] == 'l') { // is a load
+        if (s[0] == 'l') {                                      // is a load
             output[0] = output[0] + 1;
-            //cout << cache.find_block(tag, index) << endl;
             if (cache.find_block(tag, index) == 1) {
                 output[2] = output[2] + 1;
             } else {
                 output[3] = output[3] + 1;
             }
             cycles = cache.load(tag, index, argv[6]);
-        } else if (s[0] == 's') {
+        } else if (s[0] == 's') {                               // is a store
             output[1] = output[1] + 1;
             if (cache.find_block(tag, index) == 1) {
                 output[4] = output[4] + 1;            
@@ -78,9 +67,6 @@ int main(int argc, char *argv[]) {
         }
         output[6] = output[6] + cycles;
     }
-    //output[6] = output[6] + cache.store_all_dirty();
-    
     print_output(output, 7);
-    
     return 0;
 }
