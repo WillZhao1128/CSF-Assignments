@@ -19,8 +19,6 @@ using std::vector;
 
 class Set {
 public:
-    // Default constructor
-    Set() {}
 
     // Non-default constructor
     Set(uint32_t set_size, uint32_t bpb) {

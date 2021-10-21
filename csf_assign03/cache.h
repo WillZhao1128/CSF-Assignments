@@ -16,8 +16,6 @@ using std::vector;
 class Cache { // Has a sequence of set objects;
 
 public:
-    // Default constructor
-    Cache() {}
     
     /*
      * Non-default constructor
@@ -109,7 +107,6 @@ public:
 private:
     vector<Set> sets;
     uint32_t size;
-    uint32_t block_size;
 };
 
 

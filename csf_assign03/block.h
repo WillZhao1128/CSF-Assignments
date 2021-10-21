@@ -13,8 +13,6 @@
 
 class Block {
 public:
-    Block() {}
-
     // Non-default constructor
     Block(uint32_t tag_add){
         this->tag = tag_add;
