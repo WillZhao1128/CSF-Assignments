@@ -13,14 +13,12 @@
 // determines if block with specific tag is in the set
 int Set::find_block(uint32_t tag) {
     int num_blocks = blocks.size();
-    // Iterate over all blocks in the set; if same tag as one provided, then cache hit
-    for (int i = 0; i < num_blocks; i++) {
+    for (int i = 0; i < num_blocks; i++) {               // Iterate over all blocks in the set; if same tag as one provided, then cache hit
         if (blocks[i].get_tag() == tag) {
             return i;
         }   
     }
-    // return negative number if not found
-    return -1;
+    return -1;                                           // return negative number if not found
 }
 
 // determines what happens for a cache miss during a store; returns number of cycles; assumes miss occurred
@@ -28,7 +26,7 @@ uint32_t Set::write_allocate(char* wa, uint32_t tag) {
     if (strcmp(wa, "write-allocate") == 0) { 
         return update_cache(tag);                        // bring block into cache
     } else if (strcmp(wa, "no-write-allocate") == 0){
-        return 0;                                       // don't bring block into cache
+        return 0;                                        // don't bring block into cache
     } else {
         std::cerr << "error in argument" << std::endl;
         exit(2);
@@ -40,9 +38,9 @@ uint32_t Set::write_through(char* wt, uint32_t tag) {
     int index = find_block(tag);
     if (strcmp(wt, "write-through") == 0) {
         if (index < 0) {                            // block is not in cache (no-write-allocate)
-            return MAIN_MEM_CYCLES * block_size;
+            return MAIN_MEM_CYCLES;
         } else {                                    // block is in cache, so have to write to both locations
-            return MAIN_MEM_CYCLES * block_size + CACHE_CYCLES;
+            return MAIN_MEM_CYCLES + CACHE_CYCLES;
         }
     } else if (strcmp(wt, "write-back") == 0) {  
         if (index < 0) {                            // block is not in cache; makes no sense for this to ever happen
