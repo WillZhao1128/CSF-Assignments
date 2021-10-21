@@ -85,7 +85,7 @@ uint32_t Set::load(uint32_t tag, char*lru) {
         }
         return CACHE_CYCLES;                        // If fifo, don't have to update anything b/c order already self-managed
     } else {                                        // Cache miss!
-        cycles = update_cache(tag);                 // Load block from main memory to cache
+        cycles = update_cache(tag) + CACHE_CYCLES;  // Load block from main memory to cache, the load into CPU
         return cycles;
     }       
 }
