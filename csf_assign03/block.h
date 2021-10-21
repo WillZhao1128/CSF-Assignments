@@ -68,7 +68,8 @@ public:
     *
     * Parameters: None
     * 
-    * Returns: None
+    * Returns: 
+    *    1 if the block is dirty; 0 if the block is not dirty
     */
     bool is_dirty() {
         return dirty;
