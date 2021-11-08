@@ -44,31 +44,42 @@ int main(int argc, char **argv) {
   }
 
   // MUST USE UNSIGNED CHAR FOR ADDRESS COMPUTATIONS
+  // First, get all the info regarding the elf header
   unsigned char *elf_header_uc = (unsigned char *) data;
   Elf64_Ehdr *elf_header = reinterpret_cast<Elf64_Ehdr *> (elf_header_uc);
-  unsigned char *sec_headers_uc = elf_header_uc + elf_header->e_shoff;
-  Elf64_Shdr *sec_headers = reinterpret_cast<Elf64_Shdr *>(sec_headers_uc); // pointer to start of section headers
-  unsigned char *sec_names_uc = sec_headers_uc + ((elf_header->e_shstrndx) * elf_header->e_shentsize);
+  int sec_size = elf_header->e_shentsize;
+
+  // Next, get a pointer to section names
+  unsigned char *sec_headers_top = elf_header_uc + elf_header->e_shoff;
+  Elf64_Shdr *sec_headers = reinterpret_cast<Elf64_Shdr *>(sec_headers_top); // pointer to start of section headers
+  unsigned char *sec_names_uc = sec_headers_top + ((elf_header->e_shstrndx) * sec_size);
   Elf64_Shdr *sec_names = reinterpret_cast<Elf64_Shdr *> (sec_names_uc);
-
-
-  cout << elf_header_uc << endl;
-  cout << sec_names_uc << endl;
   
-/*
+  cout << elf_header->e_shnum << endl;
+
+  int num_headers = elf_header->e_shnum;
+  for (int i = 0; i < num_headers; i++) {
+    unsigned char *sec_header_uc = sec_headers_top + (i * sec_size);
+    Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section headers
+    cout << (char*)(elf_header_uc + sec_names->sh_offset + sec_header->sh_name) << endl;
+  }
+  
+  /*
   printf("offset of section headers is %lu\n", elf_header->e_shoff);
   printf("number of section headers is %u\n", elf_header->e_shnum);
   printf(".shstrtab section index is %u\n", elf_header->e_shstrndx);
-*/
+
+  cout << "header:" << elf_header_uc << endl;
+  cout << "offset:" << sec_names->sh_offset << endl;
+  cout << "name offset:" << sec_names->sh_name << endl;
 
   cout << "shstrtab data is " << sec_names->sh_offset << endl;
   cout << "shstrtab size is " << sec_names->sh_size << endl;
   cout << "shstrtab name is " << sec_names->sh_name << endl;
 
-  cout << (char*)(elf_header_uc + sec_names->sh_offset + sec_names->sh_name) << endl;
-  
 
-  
+  cout << (char*)(elf_header_uc + sec_names->sh_offset + sec_headers2->sh_name) << endl;
+  */
   //Elf64_Shdr *section_names = (Elf64_Shdr *) (section_header+elf_header->e_shstrndx);
   //unsigned char *section_names = (unsigned char *) elf_header+elf_header->e_shstrndx;  
   //char* name = (char*) elf_header+elf_header->e_shstrndx;
