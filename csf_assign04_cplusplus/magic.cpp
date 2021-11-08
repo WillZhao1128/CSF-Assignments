@@ -30,7 +30,8 @@ TODO:
 */
 
 int main(int argc, char **argv) {
-  // TODO: implement
+
+  // First, make sure to handle all of the argyments
   int fd = handle_arguments(argc, argv[1]);
   struct stat statbuf;
   int rc = fstat(fd, &statbuf);
@@ -58,6 +59,8 @@ int main(int argc, char **argv) {
 
   // Get all of the information about sections
   int num_headers = elf_header->e_shnum;
+  int sym_index = -1;
+  int sym_name_index = -1;
   for (int i = 0; i < num_headers; i++) {
     unsigned char *sec_header_uc = sec_headers_top + (i * sec_size);
     Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section headers
@@ -67,9 +70,39 @@ int main(int argc, char **argv) {
     printf("type=%lx, ", sec_header->sh_type);
     printf("offset=%lx, ", sec_header->sh_offset);
     printf("size=%lx\n", sec_header->sh_size);
+
+    if (strcmp(name, ".symtab") == 0) {
+      sym_index = i;
+    }
+    if (strcmp(name, ".strtab") == 0) {
+      sym_name_index = i;
+    }
+  }
+  cout << sym_index << endl;
+  cout <<sym_name_index << endl;
+  // Get all of the information about symbols
+  // Next, get a pointer to section .symtab
+  unsigned char *sec_symbols_uc = sec_headers_top + (sym_index * sec_size);
+  Elf64_Shdr *sec_symbols = reinterpret_cast<Elf64_Shdr *> (sec_symbols_uc);
+  int num_sym = sec_symbols->sh_size / sec_symbols->sh_entsize;
+  printf("num symbols %d\n", num_sym);
+
+  // Also, get a pointer to section .strtab
+  unsigned char *sec_strtab_uc = sec_headers_top + (sym_name_index * sec_size);
+  Elf64_Shdr *sec_strtab = reinterpret_cast<Elf64_Shdr *> (sec_strtab_uc);
+
+
+  cout << sec_strtab->sh_offset << endl;
+  for (int i = 0; i < num_sym; i++) {
+    unsigned char *sym_uc = sec_symbols_uc + (i * sec_symbols->sh_entsize);
+    Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to section headers
+    cout << "Symbol  " << i << ": ";
+    char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + (sym->st_name));
+    cout << sym->st_name << endl;
+    //printf("name=%s, \n", name);
+    
   }
 
-  // Get all of the information about symbols
 
   
 
