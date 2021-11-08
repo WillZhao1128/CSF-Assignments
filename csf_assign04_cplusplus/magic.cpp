@@ -21,7 +21,7 @@ using std::string;
 
 
 int handle_arguments(int argc, char* filename);
-void print_summary(string objtype, string machtype, string endianness);
+void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness);
 
 /*
 TODO:
@@ -45,25 +45,44 @@ int main(int argc, char **argv) {
 
   // MUST USE UNSIGNED CHAR FOR ADDRESS COMPUTATIONS
   // First, get all the info regarding the elf header
-  unsigned char *elf_header_uc = (unsigned char *) data;
+  unsigned char *elf_header_uc = static_cast<unsigned char*> (data);
   Elf64_Ehdr *elf_header = reinterpret_cast<Elf64_Ehdr *> (elf_header_uc);
   int sec_size = elf_header->e_shentsize;
 
   // Next, get a pointer to section names
   unsigned char *sec_headers_top = elf_header_uc + elf_header->e_shoff;
-  Elf64_Shdr *sec_headers = reinterpret_cast<Elf64_Shdr *>(sec_headers_top); // pointer to start of section headers
   unsigned char *sec_names_uc = sec_headers_top + ((elf_header->e_shstrndx) * sec_size);
   Elf64_Shdr *sec_names = reinterpret_cast<Elf64_Shdr *> (sec_names_uc);
-  
-  cout << elf_header->e_shnum << endl;
 
+  print_summary((uint16_t)elf_header->e_type, (uint16_t)elf_header->e_machine, (uint16_t)elf_header->e_ident[EI_DATA]);
+
+  // Get all of the information about sections
   int num_headers = elf_header->e_shnum;
   for (int i = 0; i < num_headers; i++) {
     unsigned char *sec_header_uc = sec_headers_top + (i * sec_size);
     Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section headers
-    cout << (char*)(elf_header_uc + sec_names->sh_offset + sec_header->sh_name) << endl;
+    cout << "Section header " << i << ": ";
+    char* name = (char*) (elf_header_uc + sec_names->sh_offset + sec_header->sh_name);
+    printf("name=%s, ", name);
+    printf("type=%lx, ", sec_header->sh_type);
+    printf("offset=%lx, ", sec_header->sh_offset);
+    printf("size=%lx\n", sec_header->sh_size);
   }
+
+  // Get all of the information about symbols
+
   
+
+
+
+
+
+
+
+
+
+
+
   /*
   printf("offset of section headers is %lu\n", elf_header->e_shoff);
   printf("number of section headers is %u\n", elf_header->e_shnum);
@@ -103,8 +122,16 @@ int handle_arguments(int argc, char* filename) {
   return fd;  
 }
 
-void print_summary(string objtype, string machtype, string endianness) {
-  cout << "Object file type: " << objtype << endl;
-  cout << "Instruction set: " << machtype << endl;
-  cout << "Endianness: " << endianness << endl;
+void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness) {
+  cout << "Object file type: " << get_type_name(objtype) << endl;
+  cout << "Instruction set: " << get_machine_name(machtype) << endl;
+  if (endianness == 1) {
+    cout << "Endianness: " << "Little endian" << endl;
+  } else if (endianness == 2) {
+    cout << "Endianness: " << "Big endian" << endl;
+  } else {
+    cerr << "Endianness Unknown Error" << endl;
+    exit(4);
+  }
+  
 }
