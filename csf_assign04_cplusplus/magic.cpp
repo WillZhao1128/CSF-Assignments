@@ -78,30 +78,28 @@ int main(int argc, char **argv) {
       sym_name_index = i;
     }
   }
-  cout << sym_index << endl;
-  cout <<sym_name_index << endl;
+
   // Get all of the information about symbols
   // Next, get a pointer to section .symtab
   unsigned char *sec_symbols_uc = sec_headers_top + (sym_index * sec_size);
   Elf64_Shdr *sec_symbols = reinterpret_cast<Elf64_Shdr *> (sec_symbols_uc);
   int num_sym = sec_symbols->sh_size / sec_symbols->sh_entsize;
-  printf("num symbols %d\n", num_sym);
 
   // Also, get a pointer to section .strtab
   unsigned char *sec_strtab_uc = sec_headers_top + (sym_name_index * sec_size);
   Elf64_Shdr *sec_strtab = reinterpret_cast<Elf64_Shdr *> (sec_strtab_uc);
 
-
-  cout << sec_strtab->sh_offset << endl;
+  //cout << sec_strtab->sh_offset << endl;
   for (int i = 0; i < num_sym; i++) {
-    unsigned char *sym_uc = sec_symbols_uc + (i * sec_symbols->sh_entsize);
+    unsigned char *sym_uc = (unsigned char*)(elf_header_uc + sec_symbols->sh_offset + (i * sec_symbols->sh_entsize));
     Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to section headers
-    cout << "Symbol  " << i << ": ";
-    char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + (sym->st_name));
-    cout << sym->st_name << endl;
-    //printf("name=%s, \n", name);
+    cout << "Symbol " << i << ": ";
+    char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + sym->st_name);
+    printf("Symbol: %d: name=%s, size=%lx, info=%lx, other=%lx, \n", i, name, sym->st_size, sym->st_info, sym->st_other);
     
   }
+
+  
 
 
   
