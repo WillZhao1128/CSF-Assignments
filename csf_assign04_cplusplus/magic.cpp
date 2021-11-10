@@ -44,8 +44,7 @@ int main(int argc, char **argv) {
     data = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
   }
 
-  // MUST USE UNSIGNED CHAR FOR ADDRESS COMPUTATIONS
-  // First, get all the info regarding the elf header
+  // Get all the info regarding the elf header
   unsigned char *elf_header_uc = static_cast<unsigned char*> (data);
   Elf64_Ehdr *elf_header = reinterpret_cast<Elf64_Ehdr *> (elf_header_uc);
   int sec_size = elf_header->e_shentsize;
@@ -55,30 +54,25 @@ int main(int argc, char **argv) {
   unsigned char *sec_names_uc = sec_headers_top + ((elf_header->e_shstrndx) * sec_size);
   Elf64_Shdr *sec_names = reinterpret_cast<Elf64_Shdr *> (sec_names_uc);
 
-  //unsigned char* buffer = static_cast<unsigned char*> (elf_header->e_type);
-  //int num = (int)buffer[0] | (int)buffer[1]<<8 | (int)buffer[2]<<16 | (int)buffer[3]<<24;
   print_summary((uint16_t)elf_header->e_type, (uint16_t)elf_header->e_machine, (uint16_t)elf_header->e_ident[EI_DATA]);
 
   // Get all of the information about sections
   int num_headers = elf_header->e_shnum;
-  int sym_index = -1;
-  int sym_name_index = -1;
+  int sym_index = -1, sym_name_index = -1;
   for (int i = 0; i < num_headers; i++) {
     unsigned char *sec_header_uc = sec_headers_top + (i * sec_size);
-    Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section headers
-    cout << "Section header " << i << ": ";
-    char* name = (char*) (elf_header_uc + sec_names->sh_offset + sec_header->sh_name);
-    printf("name=%s, type=%lx, offset=%lx, size=%lx\n", name, sec_header->sh_type, sec_header->sh_offset, sec_header->sh_size);
+    Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section header
+    char* name = (char*) (elf_header_uc + sec_names->sh_offset + sec_header->sh_name); // gets the section name
+    printf("Section header %d: name=%s, type=%lx, offset=%lx, size=%lx\n", i, name, sec_header->sh_type, sec_header->sh_offset, sec_header->sh_size);
 
-    if (strcmp(name, ".symtab") == 0) {
+    if (strcmp(name, ".symtab") == 0) { // Save the index of .symtab
       sym_index = i;
     }
-    if (strcmp(name, ".strtab") == 0) {
+    if (strcmp(name, ".strtab") == 0) {  // Save the index of .strtab
       sym_name_index = i;
     }
   }
 
-  // Get all of the information about symbols
   // Next, get a pointer to section .symtab
   unsigned char *sec_symbols_uc = sec_headers_top + (sym_index * sec_size);
   Elf64_Shdr *sec_symbols = reinterpret_cast<Elf64_Shdr *> (sec_symbols_uc);
@@ -88,18 +82,14 @@ int main(int argc, char **argv) {
   unsigned char *sec_strtab_uc = sec_headers_top + (sym_name_index * sec_size);
   Elf64_Shdr *sec_strtab = reinterpret_cast<Elf64_Shdr *> (sec_strtab_uc);
 
-  //cout << sec_strtab->sh_offset << endl;
+  // Iterate over all the symbols and printf the required data
   for (int i = 0; i < num_sym; i++) {
     unsigned char *sym_uc = (unsigned char*)(elf_header_uc + sec_symbols->sh_offset + (i * sec_symbols->sh_entsize));
-    Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to section headers
-    char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + sym->st_name);
+    Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to symbol headers
+    char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + sym->st_name); // gets the symbol names
     printf("Symbol %d: name=%s, size=%lx, info=%lx, other=%lx\n", i, name, sym->st_size, sym->st_info, sym->st_other);
-    
   }
-
 }
-
-
 
 int handle_arguments(int argc, char* filename) {
   if (argc != 2) {
@@ -126,5 +116,4 @@ void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness) {
     cerr << "Endianness Unknown Error" << endl;
     exit(4);
   }
-  
 }
