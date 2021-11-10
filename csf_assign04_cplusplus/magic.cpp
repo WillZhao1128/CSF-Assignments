@@ -92,9 +92,8 @@ int main(int argc, char **argv) {
   for (int i = 0; i < num_sym; i++) {
     unsigned char *sym_uc = (unsigned char*)(elf_header_uc + sec_symbols->sh_offset + (i * sec_symbols->sh_entsize));
     Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to section headers
-    cout << "Symbol " << i << ": ";
     char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + sym->st_name);
-    printf("Symbol: %d: name=%s, size=%lx, info=%lx, other=%lx, \n", i, name, sym->st_size, sym->st_info, sym->st_other);
+    printf("Symbol %d: name=%s, size=%lx, info=%lx, other=%lx\n", i, name, sym->st_size, sym->st_info, sym->st_other);
     
   }
 
