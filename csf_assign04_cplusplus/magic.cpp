@@ -22,6 +22,8 @@ using std::string;
 
 int handle_arguments(int argc, char* filename);
 void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness);
+void print_section_summary(unsigned char* elf_header_uc, int symbol_sec[2]);
+void print_symbol_summary(unsigned char* elf_header_uc, int sym_index, int sym_name_index);
 
 /*
 TODO:
@@ -47,23 +49,23 @@ int main(int argc, char **argv) {
   // Get all the info regarding the elf header
   unsigned char *elf_header_uc = static_cast<unsigned char*> (data);
   Elf64_Ehdr *elf_header = reinterpret_cast<Elf64_Ehdr *> (elf_header_uc);
-  int sec_size = elf_header->e_shentsize;
-
-  // Next, get a pointer to section names
-  unsigned char *sec_headers_top = elf_header_uc + elf_header->e_shoff;
-  unsigned char *sec_names_uc = sec_headers_top + ((elf_header->e_shstrndx) * sec_size);
-  Elf64_Shdr *sec_names = reinterpret_cast<Elf64_Shdr *> (sec_names_uc);
 
   print_summary((uint16_t)elf_header->e_type, (uint16_t)elf_header->e_machine, (uint16_t)elf_header->e_ident[EI_DATA]);
 
+
+
   // Get all of the information about sections
+  /*
   int num_headers = elf_header->e_shnum;
   int sym_index = -1, sym_name_index = -1;
   for (int i = 0; i < num_headers; i++) {
     unsigned char *sec_header_uc = sec_headers_top + (i * sec_size);
     Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section header
     char* name = (char*) (elf_header_uc + sec_names->sh_offset + sec_header->sh_name); // gets the section name
-    printf("Section header %d: name=%s, type=%lx, offset=%lx, size=%lx\n", i, name, sec_header->sh_type, sec_header->sh_offset, sec_header->sh_size);
+    printf("Section header %d: name=%s, ", i, name);
+    printf("type=%lx, ", (long unsigned int) sec_header->sh_type);
+    printf("offset=%lx, ", (long unsigned int) sec_header->sh_offset);
+    printf("size=%lx\n", (long unsigned int) sec_header->sh_size);
 
     if (strcmp(name, ".symtab") == 0) { // Save the index of .symtab
       sym_index = i;
@@ -72,8 +74,38 @@ int main(int argc, char **argv) {
       sym_name_index = i;
     }
   }
+  */
+
+  int sym_sec[2];
+  print_section_summary(elf_header_uc, sym_sec);
+  int sym_index = sym_sec[0];
+  int sym_name_index = sym_sec[1];
+  print_symbol_summary(elf_header_uc, sym_index, sym_name_index);
+  
+
+  
+/*
+  // Iterate over all the symbols and printf the required data
+  for (int i = 0; i < num_sym; i++) {
+    unsigned char *sym_uc = (unsigned char*)(elf_header_uc + sec_symbols->sh_offset + (i * sec_symbols->sh_entsize));
+    Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to symbol headers
+    char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + sym->st_name); // gets the symbol names
+    printf("Symbol %d: name=%s, ", i, name);
+    printf("size=%lx, ", (long unsigned int) sym->st_size);
+    printf("info=%lx, ", (long unsigned int) sym->st_info);
+    printf("other=%lx\n", (long unsigned int) sym->st_other);
+  }
+  */
+}
+
+void print_symbol_summary(unsigned char* elf_header_uc, int sym_index, int sym_name_index) {
 
   // Next, get a pointer to section .symtab
+  Elf64_Ehdr *elf_header = reinterpret_cast<Elf64_Ehdr *> (elf_header_uc);
+  unsigned char *sec_headers_top = elf_header_uc + elf_header->e_shoff;
+  int sec_size = elf_header->e_shentsize;
+
+
   unsigned char *sec_symbols_uc = sec_headers_top + (sym_index * sec_size);
   Elf64_Shdr *sec_symbols = reinterpret_cast<Elf64_Shdr *> (sec_symbols_uc);
   int num_sym = sec_symbols->sh_size / sec_symbols->sh_entsize;
@@ -82,14 +114,19 @@ int main(int argc, char **argv) {
   unsigned char *sec_strtab_uc = sec_headers_top + (sym_name_index * sec_size);
   Elf64_Shdr *sec_strtab = reinterpret_cast<Elf64_Shdr *> (sec_strtab_uc);
 
-  // Iterate over all the symbols and printf the required data
+
   for (int i = 0; i < num_sym; i++) {
     unsigned char *sym_uc = (unsigned char*)(elf_header_uc + sec_symbols->sh_offset + (i * sec_symbols->sh_entsize));
     Elf64_Sym *sym = reinterpret_cast<Elf64_Sym *>(sym_uc); // pointer to symbol headers
     char* name = (char*) (elf_header_uc + sec_strtab->sh_offset + sym->st_name); // gets the symbol names
-    printf("Symbol %d: name=%s, size=%lx, info=%lx, other=%lx\n", i, name, sym->st_size, sym->st_info, sym->st_other);
+    printf("Symbol %d: name=%s, ", i, name);
+    printf("size=%lx, ", (long unsigned int) sym->st_size);
+    printf("info=%lx, ", (long unsigned int) sym->st_info);
+    printf("other=%lx\n", (long unsigned int) sym->st_other);
   }
 }
+
+
 
 int handle_arguments(int argc, char* filename) {
   if (argc != 2) {
@@ -116,4 +153,36 @@ void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness) {
     cerr << "Endianness Unknown Error" << endl;
     exit(4);
   }
+}
+
+void print_section_summary(unsigned char* elf_header_uc, int symbol_sec[2]) {
+  Elf64_Ehdr *elf_header = reinterpret_cast<Elf64_Ehdr *> (elf_header_uc);
+  int sec_size = elf_header->e_shentsize;
+
+  // Next, get a pointer to section names
+  unsigned char *sec_headers_top = elf_header_uc + elf_header->e_shoff;
+  unsigned char *sec_names_uc = sec_headers_top + ((elf_header->e_shstrndx) * sec_size);
+  Elf64_Shdr *sec_names = reinterpret_cast<Elf64_Shdr *> (sec_names_uc);
+
+  int num_headers = elf_header->e_shnum;
+  int sym_index = -1, sym_name_index = -1;
+  for (int i = 0; i < num_headers; i++) {
+    unsigned char *sec_header_uc = sec_headers_top + (i * sec_size);
+    Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section header
+    char* name = (char*) (elf_header_uc + sec_names->sh_offset + sec_header->sh_name); // gets the section name
+    printf("Section header %d: name=%s, ", i, name);
+    printf("type=%lx, ", (long unsigned int) sec_header->sh_type);
+    printf("offset=%lx, ", (long unsigned int) sec_header->sh_offset);
+    printf("size=%lx\n", (long unsigned int) sec_header->sh_size);
+
+    if (strcmp(name, ".symtab") == 0) { // Save the index of .symtab
+      sym_index = i;
+    }
+    if (strcmp(name, ".strtab") == 0) {  // Save the index of .strtab
+      sym_name_index = i;
+    }
+  }
+
+  symbol_sec[0] = sym_index;
+  symbol_sec[1] = sym_name_index;
 }
