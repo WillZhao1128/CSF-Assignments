@@ -55,6 +55,8 @@ int main(int argc, char **argv) {
   unsigned char *sec_names_uc = sec_headers_top + ((elf_header->e_shstrndx) * sec_size);
   Elf64_Shdr *sec_names = reinterpret_cast<Elf64_Shdr *> (sec_names_uc);
 
+  //unsigned char* buffer = static_cast<unsigned char*> (elf_header->e_type);
+  //int num = (int)buffer[0] | (int)buffer[1]<<8 | (int)buffer[2]<<16 | (int)buffer[3]<<24;
   print_summary((uint16_t)elf_header->e_type, (uint16_t)elf_header->e_machine, (uint16_t)elf_header->e_ident[EI_DATA]);
 
   // Get all of the information about sections
@@ -66,10 +68,7 @@ int main(int argc, char **argv) {
     Elf64_Shdr *sec_header = reinterpret_cast<Elf64_Shdr *>(sec_header_uc); // pointer to section headers
     cout << "Section header " << i << ": ";
     char* name = (char*) (elf_header_uc + sec_names->sh_offset + sec_header->sh_name);
-    printf("name=%s, ", name);
-    printf("type=%lx, ", sec_header->sh_type);
-    printf("offset=%lx, ", sec_header->sh_offset);
-    printf("size=%lx\n", sec_header->sh_size);
+    printf("name=%s, type=%lx, offset=%lx, size=%lx\n", name, sec_header->sh_type, sec_header->sh_offset, sec_header->sh_size);
 
     if (strcmp(name, ".symtab") == 0) {
       sym_index = i;
@@ -99,37 +98,9 @@ int main(int argc, char **argv) {
     
   }
 
-
-
-
-
-
-
-
-  /*
-  printf("offset of section headers is %lu\n", elf_header->e_shoff);
-  printf("number of section headers is %u\n", elf_header->e_shnum);
-  printf(".shstrtab section index is %u\n", elf_header->e_shstrndx);
-
-  cout << "header:" << elf_header_uc << endl;
-  cout << "offset:" << sec_names->sh_offset << endl;
-  cout << "name offset:" << sec_names->sh_name << endl;
-
-  cout << "shstrtab data is " << sec_names->sh_offset << endl;
-  cout << "shstrtab size is " << sec_names->sh_size << endl;
-  cout << "shstrtab name is " << sec_names->sh_name << endl;
-
-
-  cout << (char*)(elf_header_uc + sec_names->sh_offset + sec_headers2->sh_name) << endl;
-  */
-  //Elf64_Shdr *section_names = (Elf64_Shdr *) (section_header+elf_header->e_shstrndx);
-  //unsigned char *section_names = (unsigned char *) elf_header+elf_header->e_shstrndx;  
-  //char* name = (char*) elf_header+elf_header->e_shstrndx;
-  //cout << (char*) (section_names+(section_names->sh_offset)) << endl;
-  //printf("section name is %s\n", (char*) section_names+section_header->sh_name);
-  //printf("elf type name is %s\n", get_type_name(elf_header->e_type));
-  
 }
+
+
 
 int handle_arguments(int argc, char* filename) {
   if (argc != 2) {
