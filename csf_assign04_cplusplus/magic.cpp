@@ -14,12 +14,6 @@
 
 #include "elf_names.h"
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::string;
-
-
 int handle_arguments(int argc, char* filename);
 void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness);
 void print_section_summary(unsigned char* elf_header_uc, int symbol_sec[2]);
@@ -33,11 +27,15 @@ int main(int argc, char **argv) {
   int rc = fstat(fd, &statbuf);
   void *data;
   if (rc != 0) {
-    cerr << "Could not get file size" << endl;
+    fprintf(stdout, "Could not get file size\n");
     exit(3);
   } else {
     size_t file_size = statbuf.st_size;
     data = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (data == (void *)-1) {
+      fprintf(stdout, "Could not map file\n");
+      exit(4);
+    }
   }
 
   // Make sure we have an ELF file using magic numbers listed on Wikipedia
@@ -60,13 +58,13 @@ int main(int argc, char **argv) {
 // Handle the potential inputs
 int handle_arguments(int argc, char* filename) {
   if (argc != 2) {
-    cerr << "Incorrect number of arguments!" << endl;
+    fprintf(stderr, "Incorrect number of arguments!\n");
     exit(1);
   }
 
   int fd = open(filename, O_RDONLY);
   if (fd < 0) {
-    cerr << "Could not open File" << endl;
+    fprintf(stderr, "Could not open File!\n");
     exit(2);
   }
   return fd;
@@ -74,15 +72,15 @@ int handle_arguments(int argc, char* filename) {
 
 // Print the summary with the ELF file
 void print_summary(uint16_t objtype, uint16_t machtype, uint16_t endianness) {
-  cout << "Object file type: " << get_type_name(objtype) << endl;
-  cout << "Instruction set: " << get_machine_name(machtype) << endl;
+  printf("Object file type: %s\n", get_type_name(objtype));
+  printf("Instruction set: %s\n", get_machine_name(machtype));
   if (endianness == 1) {
-    cout << "Endianness: " << "Little endian" << endl;
+    printf("Endianness: Little endian\n");
   } else if (endianness == 2) {
-    cout << "Endianness: " << "Big endian" << endl;
+    printf("Endianness: Big endian\n");
   } else {
-    cerr << "Endianness Unknown Error" << endl;
-    exit(4);
+    fprintf(stderr, "Endianness Unknown Error\n");
+    exit(5);
   }
 }
 
