@@ -18,9 +18,9 @@ extern "C" {
  * If you define them in C++, make sure they have extern "C"
  * linkage.
  */
-struct Calc *calc_create(void);
-void calc_destroy(struct Calc *calc);
-int calc_eval(struct Calc *calc, const char *expr, int *result);
+extern "C" struct Calc *calc_create(void);
+extern "C" void calc_destroy(struct Calc *calc);
+extern "C" int calc_eval(struct Calc *calc, const char *expr, int *result);
 
 #ifdef __cplusplus
 }
