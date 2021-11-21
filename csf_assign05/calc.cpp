@@ -1,3 +1,9 @@
+/*
+ * Implementation of the calculator program
+ * CSF Assignment 5
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
 
 #include <cctype>
 #include <string>

@@ -1,3 +1,10 @@
+/*
+ * Implementation of the calculator server
+ * CSF Assignment 5
+ * Aidan Aug, Will Zhao
+ * aaug1@jhu.edu, wzhao33@jhu.edu
+ */
+
 #include <stdio.h>      /* for snprintf */
 #include "csapp.h"
 #include "calc.h"
