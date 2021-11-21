@@ -20,17 +20,15 @@ int create_server_socket(int port);
 
 
 int main(int argc, char **argv) {
-	/* TODO: implement this program */
-	char buf[256];
 	int port = atoi(argv[1]);
 	int ssock_fd = create_server_socket(port);
 	struct Calc *calc = calc_create();
 
+	// Keep the server on
 	while (1) {
 		struct sockaddr_in clientaddr;
 		int clientfd = accept_connection(ssock_fd, &clientaddr);
 		int shutdown = chat_with_client(calc, clientfd, clientfd);
-			//write(clientfd, buf, rc);
 		if (shutdown == 0) {
 			return 0;
 		} else if(shutdown == 1) {
@@ -41,6 +39,17 @@ int main(int argc, char **argv) {
 }
 
 
+/*
+ * Takes in an input and writes out an output
+ *
+ * Parameters:
+ *   *calc - pointer to the calc struct to be deleted
+ *   infd - file descriptor specifiying where to read from
+ *   outfd - file descriptor specifying where to output the result
+ *
+ * Returns:
+ *   1 if the client chat is done; 0 if the client wants to close the remote server
+ */
 int chat_with_client(struct Calc *calc, int infd, int outfd) {
 	rio_t in;
 	char linebuf[LINEBUF_SIZE];
@@ -51,7 +60,8 @@ int chat_with_client(struct Calc *calc, int infd, int outfd) {
 	/*
 	 * Read lines of input, evaluate them as calculator expressions,
 	 * and (if evaluation was successful) print the result of each
-	 * expression.  Quit when "quit" command is received.
+	 * expression.  Quit when "quit" command is received. Quit and close
+	 * the server when "shutdown" command is received
 	 */
 	int done = 0;
 	while (!done) {
@@ -82,6 +92,16 @@ int chat_with_client(struct Calc *calc, int infd, int outfd) {
 	return 1;
 }
 
+/*
+ * Accepts a connection
+ *
+ * Parameters:
+ *   ssoci_fd
+ *   sock_addr_in - the client address to read from / accept connection from
+ *
+ * Returns:
+ *   the accepted connection file descriptor
+ */
 int accept_connection(int ssock_fd, struct sockaddr_in *clientaddr) {
 	unsigned clientlen = sizeof(clientaddr);
 	int childfd = accept(ssock_fd, (struct sockaddr *) clientaddr, &clientlen);
@@ -94,6 +114,15 @@ int accept_connection(int ssock_fd, struct sockaddr_in *clientaddr) {
 	return childfd;
 }
 
+/*
+ * creates a server socket for communication
+ *
+ * Parameters:
+ *   port - the port number of where to establish the connect from
+ *
+ * Returns:
+ *   1 if the server socket was successfully created
+ */
 int create_server_socket(int port) {
 	struct sockaddr_in serveraddr = {0};
 	int ssock_fd = socket(AF_INET, SOCK_STREAM, 0);

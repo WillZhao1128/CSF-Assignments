@@ -32,7 +32,17 @@ private:
 public:
     // public member functions
 
-    // Evaluates the string expression provided and stores in pass-by-ref result
+    /*
+    * Evaluates the string expression provided 
+    * and stores in pass-by-ref result
+    *
+    * Parameters:
+    *   &expr - the string expression
+    *   &result - location to store result of expression
+    *
+    * Returns:
+    *   1 if success; 0 if failed
+    */
     int evalExpr(const string &expr, int &result) {
         int is_valid = 0;
         vector<string> expr_vec = tokenize(expr);
@@ -76,7 +86,15 @@ public:
 private:
     // private member functions
 
-    // Creates a vector of strings based on expression
+    /*
+    * Creates a vector of strings based on the provided expression
+    *
+    * Parameters:
+    *   &expr - the string expression
+    *
+    * Returns:
+    *   a vector of tokenized inputs based on the expression
+    */
     vector<string> tokenize(const string &expr) {
         vector<string> vec;
         stringstream s(expr);
@@ -87,7 +105,15 @@ private:
         return vec;
     }
 
-    // Determines if the variable exists in the calculator; returns 1 if yes
+    /*
+    * Determines if the variable exists in the calculator
+    *
+    * Parameters:
+    *   s - the string to evaluate (from expression vector)
+    *
+    * Returns:
+    *   1 if the variable exists in the map
+    */
     bool var_exists(string s) {
         map<string, int>::iterator it;
         it = variables.find(s);
@@ -97,7 +123,16 @@ private:
         return 0;
     }
 
-    // Determines/returns the value of either variable or int literal based on string
+    /*
+    * Determines/returns the value of either variable or int literal 
+    * based on the provided string
+    *
+    * Parameters:
+    *   s - the string to evaluate (from expression vector)
+    *
+    * Returns:
+    *   the value of the integer or int literal
+    */
     int determine_val(string s) {
         map<string, int>::iterator it;
         it = variables.find(s);
@@ -108,23 +143,51 @@ private:
         }
     }
 
-    // Determines if the operand is valid (var stored in calculator, or is an int literal)
+    /*
+    * Determines if the operand is valid (var stored in calculator,
+    * or is an int literal
+    *
+    * Parameters:
+    *   s - the string to evaluate (from expression vector)
+    *
+    * Returns:
+    *   1 if the operand is in the map or is an integer litera
+    */
     bool valid_operand(string s) {
         if ((is_all_letters(s) && var_exists(s)) || is_all_num(s)) {
+
             return 1;
         }
+        cout << is_all_num(s) << endl;
         return 0;
     }
 
-    // Determines if the operation is valid
-    int valid_op(string op) {
+    /*
+    * Determines if the operation is valid (addition, subtraction,
+    * multiplication, or division)
+    *
+    * Parameters:
+    *   op - the string to evaluate (from expression vector)
+    *
+    * Returns:
+    *   1 if the operation is valid
+    */
+    bool valid_op(string op) {
         if (op.compare("+") || op.compare("-") || op.compare("*") || op.compare("/")) {
             return 1;
         }
         return 0;
     }
 
-    // Determines if the provided expression is valid
+    /*
+    * Determines if mathematical expression is valid
+    *
+    * Parameters:
+    *   expr_vec - the vector of tokenized version of input string
+    *
+    * Returns:
+    *   1 if the expression is acceptable (one of four possibilities)
+    */
     bool valid_expression(vector<string> expr_vec) {
         if ((expr_vec.size() == 3 || expr_vec.size() == 5) && valid_op(expr_vec[1])) {
             for (int i = 0; i < 3; i+=2) {
@@ -147,10 +210,22 @@ private:
         return 1;
     }
 
-    // Determines if a string represents an integer (each character is a numbers)
+    /*
+    * Determines if a string represents an integer (each character is a number)
+    *
+    * Parameters:
+    *   s - the string to evaluate (from expression vector)
+    *
+    * Returns:
+    *   1 if the string is all digits and/or has negative sign
+    */
     bool is_all_num(string s) {
         int num_char = s.length();
-        for (int i = 0; i < num_char; i++) {
+        int start = 0;
+        if (s[0] == '-') {
+            start = 1;
+        }
+        for (int i = start; i < num_char; i++) {
             if (!std::isdigit(s[i])) {
                 return 0;
 
@@ -159,7 +234,15 @@ private:
         return 1;
     }
 
-    // Determine if a variable is all letters or not
+    /*
+    * Determine if a variable is all letters or not
+    *
+    * Parameters:
+    *   s - the string to evaluate (from expression vector)
+    *
+    * Returns:
+    *   1 if the operand is all letters
+    */
     bool is_all_letters(string s) {
         int len = s.length();
         for (int i = 0; i < len; i++) {
@@ -170,8 +253,17 @@ private:
         return 1;
     }
 
-    // Performs the operation defined by operand op operand
-    int operation(vector<string> expr_vec, int& result) {
+    /*
+    * Performs the operation defined by operand op operand
+    *
+    * Parameters:
+    *   expr_vec - the tokenized vector of the input string expression
+    *   result - the location to store the result of the operation
+    *
+    * Returns:
+    *   1 if the operation requested was sucessful
+    */
+    bool operation(vector<string> expr_vec, int& result) {
         int operand1 = determine_val(expr_vec[0]);
         int operand2 = determine_val(expr_vec[2]);
         char c = expr_vec[1][0];
@@ -203,7 +295,16 @@ private:
 
     }
 
-    // Assigns a variable with new value or creates new variable
+    /*
+    * Assigns a variable with new value or creates new variable
+    *
+    * Parameters:
+    *   expr_vec - the tokenized vector of the input string expression
+    *   result - the location to store the result of the operation
+    *
+    * Returns:
+    *   1 if the variable assignment or addition to map was sucessful
+    */
     bool assign_variable(vector<string> expr_vec, int result) {
         map<string, int>::iterator it;
         it = variables.find(expr_vec[0]);
@@ -222,14 +323,41 @@ private:
 
 
 
+/*
+ * Creates a new instance of a calculator struct
+ *
+ * Parameters:
+ *
+ * Returns:
+ *   the created calculator object
+ */
 extern "C" struct Calc *calc_create(void) {
     return new Calc();
 }
 
+/*
+ * Removes/destroys the calculator object
+ *
+ * Parameters:
+ *      *calc - pointer to the calc struct to be deleted
+ *
+ * Returns:
+ */
 extern "C" void calc_destroy(struct Calc *calc) {
     delete calc;
 }
 
+/*
+ * Evaluates an expression
+ *
+ * Parameters:
+ *   *calc - pointer to the calc struct to be deleted
+ *   *expr - string specified by user to denote a mathematical expression/equation
+ *   *result - the location to store the result of the operation
+ *
+ * Returns:
+ *   1 if the evaluation of the expression was successful; 0 otherwise
+ */
 extern "C" int calc_eval(struct Calc *calc, const char *expr, int *result) {
     return calc->evalExpr(expr, *result);
 }
