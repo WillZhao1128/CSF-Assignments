@@ -11,7 +11,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
-
+#include <mutex>
 #include "calc.h"
 
 using std::vector;
@@ -27,6 +27,7 @@ struct Calc {
 private:
     // fields
     map<string, int> variables;
+    std::mutex m;
     int size;
     
 public:
@@ -50,7 +51,9 @@ public:
         // Check to see if the expression is in 1 of 4 formats
         if (!valid_expression(expr_vec)) {
             return 0;
-        } 
+        }
+
+        m.lock(); 
 
         // Determine what to do based on number arguments provide
         if (expr_vec.size() == 1) {  // vector size = 1: int literal or string
@@ -76,10 +79,13 @@ public:
             if (valid_operand(temp_vec[2]) && valid_operand(temp_vec[0])) {
                 is_valid = operation(temp_vec, result);
             } else {
+                m.unlock();
                 return 0;
             }
             is_valid = assign_variable(expr_vec, result);
         }
+
+        m.unlock();
         return is_valid;
     }
 
