@@ -52,8 +52,10 @@ public:
         if (!valid_expression(expr_vec)) {
             return 0;
         }
-
+        
+        //Critical Region
         m.lock(); 
+        
 
         // Determine what to do based on number arguments provide
         if (expr_vec.size() == 1) {  // vector size = 1: int literal or string

@@ -24,7 +24,7 @@ sem_t sem;  //Semaphore
 thread params[MAX];  
 int listenfd = -1;
 int busy[MAX] = {0};   
-int results[MAX] = {0};   
+int res[MAX] = {0};   
 
 int chat_with_client(struct Calc *calc, int infd, int outfd, int index);
 void* clean_shut_down_chat_with_client(void *params);
@@ -34,7 +34,8 @@ int main(int argc, char **argv) {
   if(argc != 2){
     print_error("Error: invalid arguments");
   }
-  // create a server
+
+  // create server
   listenfd = Open_listenfd(argv[1]);
   if (listenfd < 0) {
     print_error("Error: failed to open up server");
@@ -43,7 +44,7 @@ int main(int argc, char **argv) {
   struct Calc *networkCalc = calc_create();
   pthread_t pid[MAX];
 
-  // initiate semaphores
+  // initialize semaphores
   if(sem_init(&sem, 0, MAX) != 0) {
     printf("Semaphore initialization failed\n");
   }
@@ -54,8 +55,8 @@ int main(int argc, char **argv) {
       print_error("Error: client connection failed");
     }
 
+	//if the server has been shutdown
     if(listenfd < 0) {
-      // the server has been shutdown
       close(clientfd);
       break;
     }
@@ -172,14 +173,14 @@ int chat_with_client(struct Calc *calc, int infd, int outfd, int index) {
 }
 
 
-//a function that update the array of results and close the listen when recieve shutdown
+//function that updates the array of res and close the listen when recieve shutdown
 // Parameter: params - a void pointer in C
 void* clean_shut_down_chat_with_client(void *params) {
   thread *p = (thread *)params;
 
   int ret = chat_with_client(p->calc, p->in, p->out, p->i);
-  //update results
-  results[p->i] = ret;
+  //update res
+  res[p->i] = ret;
 
   close(p->in);
 
